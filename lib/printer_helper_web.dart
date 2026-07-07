@@ -6,434 +6,359 @@ import 'package:qr/qr.dart';
 import 'models.dart';
 
 void printItemLabelImpl(Item item, Room room) {
-  // Generate barcode SVG
-  final barcodeSvg = _generateBarcodeSvg(item.kodeBarang);
-  
-  // Generate QR Code SVG (berisi link rujukan ke GitHub Pages)
   final qrUrl = 'https://ariniarini2207-arch.github.io/webdp3a/?item=${item.id}';
   final qrSvg = _generateQrSvg(qrUrl);
-  
-  final htmlContent = '''
-<!DOCTYPE html>
+
+  final htmlContent = '''<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Cetak Label Aset - ${item.jenisBarang}</title>
+  <title>Label - ${item.jenisBarang}</title>
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    @page {
+      size: 9cm 12cm;
+      margin: 0;
+    }
+
     @media print {
-      body {
-        margin: 0;
-        padding: 0;
-      }
-      .label-container {
-        border: none !important;
-        box-shadow: none !important;
-      }
+      html, body { width: 9cm; height: 12cm; }
+      .card { box-shadow: none !important; border-radius: 0 !important; }
+      .print-btn { display: none !important; }
     }
-    
+
     body {
-      font-family: 'Arial', sans-serif;
-      margin: 20px;
-      background-color: #ffffff;
-      color: #000000;
-    }
-    
-    .label-container {
-      width: 480px;
-      border: 2px solid #000000;
-      border-radius: 8px;
-      padding: 16px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      background-color: #ffffff;
-      box-sizing: border-box;
-    }
-    
-    .header {
+      font-family: 'Arial Black', Arial, sans-serif;
+      background: #e0e0e0;
       display: flex;
+      justify-content: center;
       align-items: center;
-      border-bottom: 2px double #000000;
-      padding-bottom: 8px;
-      margin-bottom: 12px;
+      min-height: 100vh;
     }
-    
-    .logo-placeholder {
-      width: 45px;
-      height: 45px;
-      margin-right: 12px;
+
+    .card {
+      width: 9cm;
+      height: 12cm;
+      background: linear-gradient(160deg, #1565C0 0%, #1976D2 40%, #2196F3 100%);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Zigzag top decoration */
+    .zigzag-top {
+      width: 100%;
+      height: 28px;
+      flex-shrink: 0;
+    }
+
+    /* Zigzag bottom decoration */
+    .zigzag-bottom {
+      width: 100%;
+      height: 28px;
+      flex-shrink: 0;
+    }
+
+    .title {
+      color: #FFFFFF;
+      font-size: 22pt;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      margin-top: -4px;
+      text-align: center;
+    }
+
+    .qr-wrapper {
+      background: white;
+      border-radius: 12px;
+      padding: 10px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+      width: 5.5cm;
+      height: 5.5cm;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    
-    .header-text {
-      flex: 1;
-      font-size: 10px;
-      font-weight: bold;
-      text-transform: uppercase;
+
+    .qr-wrapper svg {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    .info-box {
+      background: rgba(255,255,255,0.92);
+      border-radius: 8px;
+      padding: 6px 16px;
       text-align: center;
+      width: 85%;
+    }
+
+    .info-name {
+      font-size: 10pt;
+      font-weight: 900;
+      color: #1565C0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
       line-height: 1.3;
     }
-    
-    .content-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 12px;
-      font-size: 13px;
+
+    .info-code {
+      font-size: 8pt;
+      font-weight: 700;
+      color: #333;
+      font-family: 'Courier New', monospace;
+      margin-top: 2px;
     }
-    
-    .content-table td {
-      padding: 4px 0;
-      vertical-align: top;
+
+    .footer-bar {
+      background: rgba(255,255,255,0.18);
+      width: 75%;
+      border-radius: 20px;
+      padding: 4px 12px;
+      margin-bottom: 2px;
     }
-    
-    .content-table td.label {
-      width: 100px;
-      font-weight: bold;
-    }
-    
-    .content-table td.colon {
-      width: 12px;
-    }
-    
-    .codes-section {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-top: 1px dashed #000000;
-      padding-top: 10px;
-    }
-    
-    .barcode-area {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding-right: 10px;
-    }
-    
-    .barcode-svg-container {
-      width: 100%;
-      max-width: 240px;
-      height: 60px;
-    }
-    
-    .barcode-text {
-      font-family: monospace;
-      font-size: 11px;
-      font-weight: bold;
-      margin-top: 4px;
+
+    .footer-text {
+      font-size: 8.5pt;
+      font-weight: 900;
+      color: #FFFFFF;
+      text-align: center;
       letter-spacing: 1px;
+      text-transform: uppercase;
     }
-    
-    .qr-area {
-      width: 90px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      border-left: 1px dashed #000000;
-      padding-left: 10px;
-    }
-    
-    .qr-svg-container {
-      width: 75px;
-      height: 75px;
-    }
-    
-    .qr-text {
-      font-size: 9px;
+
+    .print-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #1565C0;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 22px;
+      font-size: 13pt;
       font-weight: bold;
-      margin-top: 4px;
-      color: #333333;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
+    .print-btn:hover { background: #0D47A1; }
   </style>
 </head>
 <body>
+  <div class="card">
+    <!-- Zigzag Top -->
+    <svg class="zigzag-top" viewBox="0 0 360 28" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="0,0 360,0 360,28 330,10 300,28 270,10 240,28 210,10 180,28 150,10 120,28 90,10 60,28 30,10 0,28" fill="rgba(255,255,255,0.15)"/>
+      <polygon points="0,0 360,0 360,20 345,6 315,22 285,6 255,22 225,6 195,22 165,6 135,22 105,6 75,22 45,6 15,22 0,8" fill="rgba(255,255,255,0.10)"/>
+    </svg>
 
-  <div class="label-container">
-    <div class="header">
-      <div class="logo-placeholder">
-        <svg width="40" height="45" viewBox="0 0 100 115" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M50 0 L95 25 L95 85 L50 115 L5 85 L5 25 Z" stroke="black" stroke-width="6" fill="#F4F4F4"/>
-          <path d="M50 15 L85 34 L85 80 L50 100 L15 80 L15 34 Z" fill="black" opacity="0.1"/>
-          <circle cx="50" cy="55" r="22" stroke="black" stroke-width="5" fill="none"/>
-          <path d="M35 55 L65 55 M50 40 L50 70" stroke="black" stroke-width="5" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <div class="header-text">
-        Pemerintah Provinsi Sulawesi Selatan<br>
-        Dinas Pemberdayaan Perempuan, Perlindungan Anak,<br>
-        Pengendalian Penduduk dan KB
-      </div>
+    <div class="title">SCAN BANDA</div>
+
+    <div class="qr-wrapper">
+      $qrSvg
     </div>
-    
-    <table class="content-table">
-      <tr>
-        <td class="label">Nama Aset</td>
-        <td class="colon">:</td>
-        <td style="font-weight: bold;">${item.jenisBarang}</td>
-      </tr>
-      <tr>
-        <td class="label">Merek/Model</td>
-        <td class="colon">:</td>
-        <td>${item.merekModel}</td>
-      </tr>
-      <tr>
-        <td class="label">Ruangan</td>
-        <td class="colon">:</td>
-        <td>${room.name} (${room.year})</td>
-      </tr>
-    </table>
-    
-    <div class="codes-section">
-      <div class="barcode-area">
-        <div class="barcode-svg-container">
-          $barcodeSvg
-        </div>
-        <div class="barcode-text">${item.kodeBarang}</div>
-      </div>
-      
-      <div class="qr-area">
-        <div class="qr-svg-container">
-          $qrSvg
-        </div>
-        <div class="qr-text">GOOGLE LENS</div>
-      </div>
+
+    <div class="info-box">
+      <div class="info-name">${item.jenisBarang}</div>
+      <div class="info-code">${item.kodeBarang}</div>
     </div>
+
+    <div class="footer-bar">
+      <div class="footer-text">DP3A DALDUK KB</div>
+    </div>
+
+    <!-- Zigzag Bottom -->
+    <svg class="zigzag-bottom" viewBox="0 0 360 28" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="0,28 360,28 360,0 330,18 300,0 270,18 240,0 210,18 180,0 150,18 120,0 90,18 60,0 30,18 0,0" fill="rgba(255,255,255,0.15)"/>
+      <polygon points="0,28 360,28 360,8 345,22 315,6 285,22 255,6 225,22 195,6 165,22 135,6 105,22 75,6 45,22 15,6 0,20" fill="rgba(255,255,255,0.10)"/>
+    </svg>
   </div>
 
-  <script>
-    window.onload = function() {
-      setTimeout(function() {
-        window.print();
-        setTimeout(function() {
-          window.close();
-        }, 500);
-      }, 500);
-    }
-  </script>
+  <button class="print-btn" onclick="window.print(); setTimeout(()=>window.close(),800);">🖨️ Cetak</button>
 </body>
-</html>
-''';
+</html>''';
 
   final blob = html.Blob([htmlContent], 'text/html');
   final url = html.Url.createObjectUrlFromBlob(blob);
-  html.window.open(url, 'label-${item.id}', 'width=620,height=520');
-  Future.delayed(const Duration(seconds: 30), () => html.Url.revokeObjectUrl(url));
+  html.window.open(url, 'label-${item.id}', 'width=400,height=560');
+  Future.delayed(const Duration(seconds: 60), () => html.Url.revokeObjectUrl(url));
 }
 
 void printRoomLabelImpl(Room room) {
-  // Generate barcode SVG
-  final barcodeSvg = _generateBarcodeSvg(room.barcode);
-  
-  // Generate QR Code SVG (berisi link rujukan ke GitHub Pages ruangan)
   final qrUrl = 'https://ariniarini2207-arch.github.io/webdp3a/?room=${room.id}';
   final qrSvg = _generateQrSvg(qrUrl);
-  
-  final htmlContent = '''
-<!DOCTYPE html>
+
+  final htmlContent = '''<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Cetak Label Ruangan - ${room.name}</title>
+  <title>Label Ruangan - ${room.name}</title>
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    @page {
+      size: 9cm 12cm;
+      margin: 0;
+    }
+
     @media print {
-      body {
-        margin: 0;
-        padding: 0;
-      }
-      .label-container {
-        border: none !important;
-        box-shadow: none !important;
-      }
+      html, body { width: 9cm; height: 12cm; }
+      .card { box-shadow: none !important; border-radius: 0 !important; }
+      .print-btn { display: none !important; }
     }
-    
+
     body {
-      font-family: 'Arial', sans-serif;
-      margin: 20px;
-      background-color: #ffffff;
-      color: #000000;
-    }
-    
-    .label-container {
-      width: 480px;
-      border: 2px solid #000000;
-      border-radius: 8px;
-      padding: 16px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      background-color: #ffffff;
-      box-sizing: border-box;
-    }
-    
-    .header {
+      font-family: 'Arial Black', Arial, sans-serif;
+      background: #e0e0e0;
       display: flex;
+      justify-content: center;
       align-items: center;
-      border-bottom: 2px double #000000;
-      padding-bottom: 8px;
-      margin-bottom: 12px;
+      min-height: 100vh;
     }
-    
-    .logo-placeholder {
-      width: 45px;
-      height: 45px;
-      margin-right: 12px;
+
+    .card {
+      width: 9cm;
+      height: 12cm;
+      background: linear-gradient(160deg, #1565C0 0%, #1976D2 40%, #2196F3 100%);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .zigzag-top { width: 100%; height: 28px; flex-shrink: 0; }
+    .zigzag-bottom { width: 100%; height: 28px; flex-shrink: 0; }
+
+    .title {
+      color: #FFFFFF;
+      font-size: 22pt;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      margin-top: -4px;
+      text-align: center;
+    }
+
+    .qr-wrapper {
+      background: white;
+      border-radius: 12px;
+      padding: 10px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+      width: 5.5cm;
+      height: 5.5cm;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    
-    .header-text {
-      flex: 1;
-      font-size: 10px;
-      font-weight: bold;
-      text-transform: uppercase;
+
+    .qr-wrapper svg { width: 100% !important; height: 100% !important; }
+
+    .info-box {
+      background: rgba(255,255,255,0.92);
+      border-radius: 8px;
+      padding: 6px 16px;
       text-align: center;
+      width: 85%;
+    }
+
+    .info-name {
+      font-size: 10pt;
+      font-weight: 900;
+      color: #1565C0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
       line-height: 1.3;
     }
-    
-    .content-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 12px;
-      font-size: 13px;
+
+    .info-code {
+      font-size: 8pt;
+      font-weight: 700;
+      color: #333;
+      font-family: 'Courier New', monospace;
+      margin-top: 2px;
     }
-    
-    .content-table td {
-      padding: 4px 0;
-      vertical-align: top;
+
+    .footer-bar {
+      background: rgba(255,255,255,0.18);
+      width: 75%;
+      border-radius: 20px;
+      padding: 4px 12px;
+      margin-bottom: 2px;
     }
-    
-    .content-table td.label {
-      width: 100px;
-      font-weight: bold;
-    }
-    
-    .content-table td.colon {
-      width: 12px;
-    }
-    
-    .codes-section {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-top: 1px dashed #000000;
-      padding-top: 10px;
-    }
-    
-    .barcode-area {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding-right: 10px;
-    }
-    
-    .barcode-svg-container {
-      width: 100%;
-      max-width: 240px;
-      height: 60px;
-    }
-    
-    .barcode-text {
-      font-family: monospace;
-      font-size: 11px;
-      font-weight: bold;
-      margin-top: 4px;
+
+    .footer-text {
+      font-size: 8.5pt;
+      font-weight: 900;
+      color: #FFFFFF;
+      text-align: center;
       letter-spacing: 1px;
+      text-transform: uppercase;
     }
-    
-    .qr-area {
-      width: 90px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      border-left: 1px dashed #000000;
-      padding-left: 10px;
-    }
-    
-    .qr-svg-container {
-      width: 75px;
-      height: 75px;
-    }
-    
-    .qr-text {
-      font-size: 9px;
+
+    .print-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #1565C0;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 22px;
+      font-size: 13pt;
       font-weight: bold;
-      margin-top: 4px;
-      color: #333333;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
+    .print-btn:hover { background: #0D47A1; }
   </style>
 </head>
 <body>
+  <div class="card">
+    <svg class="zigzag-top" viewBox="0 0 360 28" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="0,0 360,0 360,28 330,10 300,28 270,10 240,28 210,10 180,28 150,10 120,28 90,10 60,28 30,10 0,28" fill="rgba(255,255,255,0.15)"/>
+      <polygon points="0,0 360,0 360,20 345,6 315,22 285,6 255,22 225,6 195,22 165,6 135,22 105,6 75,22 45,6 15,22 0,8" fill="rgba(255,255,255,0.10)"/>
+    </svg>
 
-  <div class="label-container">
-    <div class="header">
-      <div class="logo-placeholder">
-        <svg width="40" height="45" viewBox="0 0 100 115" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M50 0 L95 25 L95 85 L50 115 L5 85 L5 25 Z" stroke="black" stroke-width="6" fill="#F4F4F4"/>
-          <path d="M50 15 L85 34 L85 80 L50 100 L15 80 L15 34 Z" fill="black" opacity="0.1"/>
-          <circle cx="50" cy="55" r="22" stroke="black" stroke-width="5" fill="none"/>
-          <path d="M35 55 L65 55 M50 40 L50 70" stroke="black" stroke-width="5" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <div class="header-text">
-        Pemerintah Provinsi Sulawesi Selatan<br>
-        Dinas Pemberdayaan Perempuan, Perlindungan Anak,<br>
-        Pengendalian Penduduk dan KB
-      </div>
+    <div class="title">SCAN BANDA</div>
+
+    <div class="qr-wrapper">
+      $qrSvg
     </div>
-    
-    <table class="content-table">
-      <tr>
-        <td class="label">Label Ruang</td>
-        <td class="colon">:</td>
-        <td style="font-weight: bold; font-size: 16px;">${room.name}</td>
-      </tr>
-      <tr>
-        <td class="label">Tahun Reg.</td>
-        <td class="colon">:</td>
-        <td>${room.year}</td>
-      </tr>
-    </table>
-    
-    <div class="codes-section">
-      <div class="barcode-area">
-        <div class="barcode-svg-container">
-          $barcodeSvg
-        </div>
-        <div class="barcode-text">${room.barcode}</div>
-      </div>
-      
-      <div class="qr-area">
-        <div class="qr-svg-container">
-          $qrSvg
-        </div>
-        <div class="qr-text">GOOGLE LENS</div>
-      </div>
+
+    <div class="info-box">
+      <div class="info-name">${room.name}</div>
+      <div class="info-code">${room.year} — ${room.barcode}</div>
     </div>
+
+    <div class="footer-bar">
+      <div class="footer-text">DP3A DALDUK KB</div>
+    </div>
+
+    <svg class="zigzag-bottom" viewBox="0 0 360 28" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="0,28 360,28 360,0 330,18 300,0 270,18 240,0 210,18 180,0 150,18 120,0 90,18 60,0 30,18 0,0" fill="rgba(255,255,255,0.15)"/>
+      <polygon points="0,28 360,28 360,8 345,22 315,6 285,22 255,6 225,22 195,6 165,22 135,6 105,22 75,6 45,22 15,6 0,20" fill="rgba(255,255,255,0.10)"/>
+    </svg>
   </div>
 
-  <script>
-    window.onload = function() {
-      setTimeout(function() {
-        window.print();
-        setTimeout(function() {
-          window.close();
-        }, 500);
-      }, 500);
-    }
-  </script>
+  <button class="print-btn" onclick="window.print(); setTimeout(()=>window.close(),800);">🖨️ Cetak</button>
 </body>
-</html>
-''';
+</html>''';
 
   final blob = html.Blob([htmlContent], 'text/html');
   final url = html.Url.createObjectUrlFromBlob(blob);
-  html.window.open(url, 'label-ruang-${room.id}', 'width=620,height=520');
-  Future.delayed(const Duration(seconds: 30), () => html.Url.revokeObjectUrl(url));
+  html.window.open(url, 'label-ruang-${room.id}', 'width=400,height=560');
+  Future.delayed(const Duration(seconds: 60), () => html.Url.revokeObjectUrl(url));
 }
 
 String _generateBarcodeSvg(String data) {
@@ -452,21 +377,21 @@ String _generateQrSvg(String data) {
       errorCorrectLevel: QrErrorCorrectLevel.M,
     );
     final qrImage = QrImage(qrCode);
-    
+
     final moduleCount = qrImage.moduleCount;
     final size = 150.0;
     final dotSize = size / moduleCount;
-    
+
     final sb = StringBuffer();
     sb.write('<svg width="100%" height="100%" viewBox="0 0 $size $size" fill="none" xmlns="http://www.w3.org/2000/svg">');
     sb.write('<rect width="$size" height="$size" fill="white"/>');
-    
+
     for (int x = 0; x < moduleCount; x++) {
       for (int y = 0; y < moduleCount; y++) {
         if (qrImage.isDark(y, x)) {
           final px = x * dotSize;
           final py = y * dotSize;
-          sb.write('<rect x="$px" y="$py" width="$dotSize" height="$dotSize" fill="black"/>');
+          sb.write('<rect x="$px" y="$py" width="$dotSize" height="$dotSize" fill="#1565C0"/>');
         }
       }
     }
