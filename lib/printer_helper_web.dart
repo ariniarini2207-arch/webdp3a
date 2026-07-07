@@ -1,4 +1,5 @@
 // ignore_for_file: avoid_web_libraries_in_flutter
+import 'dart:async';
 import 'dart:html' as html;
 import 'package:barcode/barcode.dart';
 import 'package:qr/qr.dart';
@@ -216,12 +217,10 @@ void printItemLabelImpl(Item item, Room room) {
 </html>
 ''';
 
-  final popup = html.window.open('', 'label-${item.id}', 'width=620,height=520') as html.Window?;
-  if (popup != null) {
-    popup.document.open();
-    popup.document.write(htmlContent);
-    popup.document.close();
-  }
+  final blob = html.Blob([htmlContent], 'text/html');
+  final url = html.Url.createObjectUrlFromBlob(blob);
+  html.window.open(url, 'label-${item.id}', 'width=620,height=520');
+  Future.delayed(const Duration(seconds: 30), () => html.Url.revokeObjectUrl(url));
 }
 
 void printRoomLabelImpl(Room room) {
@@ -431,12 +430,10 @@ void printRoomLabelImpl(Room room) {
 </html>
 ''';
 
-  final popup = html.window.open('', 'label-ruang-${room.id}', 'width=620,height=520') as html.Window?;
-  if (popup != null) {
-    popup.document.open();
-    popup.document.write(htmlContent);
-    popup.document.close();
-  }
+  final blob = html.Blob([htmlContent], 'text/html');
+  final url = html.Url.createObjectUrlFromBlob(blob);
+  html.window.open(url, 'label-ruang-${room.id}', 'width=620,height=520');
+  Future.delayed(const Duration(seconds: 30), () => html.Url.revokeObjectUrl(url));
 }
 
 String _generateBarcodeSvg(String data) {
