@@ -1112,8 +1112,18 @@ class DashboardScreen extends StatelessWidget {
                         'year': newRoom.year,
                         'barcode': newRoom.barcode,
                       });
+                      debugPrint('Supabase: Room berhasil disimpan!');
                     } catch (e) {
                       debugPrint('Supabase Room Insert Error: $e');
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Gagal simpan ke database: $e'),
+                            backgroundColor: Colors.red,
+                            duration: const Duration(seconds: 6),
+                          ),
+                        );
+                      }
                     }
                   }
 

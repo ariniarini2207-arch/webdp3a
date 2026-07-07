@@ -6,7 +6,8 @@ import 'package:qr/qr.dart';
 import 'models.dart';
 
 void printItemLabelImpl(Item item, Room room) {
-  final qrUrl = 'https://ariniarini2207-arch.github.io/webdp3a/?item=${item.id}';
+  final qrUrl =
+      'https://ariniarini2207-arch.github.io/webdp3a/?item=${item.id}';
   final qrSvg = _generateQrSvg(qrUrl);
 
   final htmlContent = '''<!DOCTYPE html>
@@ -200,11 +201,13 @@ void printItemLabelImpl(Item item, Room room) {
   final blob = html.Blob([htmlContent], 'text/html');
   final url = html.Url.createObjectUrlFromBlob(blob);
   html.window.open(url, 'label-${item.id}', 'width=400,height=560');
-  Future.delayed(const Duration(seconds: 60), () => html.Url.revokeObjectUrl(url));
+  Future.delayed(
+      const Duration(seconds: 60), () => html.Url.revokeObjectUrl(url));
 }
 
 void printRoomLabelImpl(Room room) {
-  final qrUrl = 'https://ariniarini2207-arch.github.io/webdp3a/?room=${room.id}';
+  final qrUrl =
+      'https://ariniarini2207-arch.github.io/webdp3a/?room=${room.id}';
   final qrSvg = _generateQrSvg(qrUrl);
 
   final htmlContent = '''<!DOCTYPE html>
@@ -382,7 +385,8 @@ void printRoomLabelImpl(Room room) {
   final blob = html.Blob([htmlContent], 'text/html');
   final url = html.Url.createObjectUrlFromBlob(blob);
   html.window.open(url, 'label-ruang-${room.id}', 'width=400,height=560');
-  Future.delayed(const Duration(seconds: 60), () => html.Url.revokeObjectUrl(url));
+  Future.delayed(
+      const Duration(seconds: 60), () => html.Url.revokeObjectUrl(url));
 }
 
 String _generateBarcodeSvg(String data) {
@@ -407,7 +411,8 @@ String _generateQrSvg(String data) {
     final dotSize = size / moduleCount;
 
     final sb = StringBuffer();
-    sb.write('<svg width="100%" height="100%" viewBox="0 0 $size $size" fill="none" xmlns="http://www.w3.org/2000/svg">');
+    sb.write(
+        '<svg width="100%" height="100%" viewBox="0 0 $size $size" fill="none" xmlns="http://www.w3.org/2000/svg">');
     sb.write('<rect width="$size" height="$size" fill="white"/>');
 
     for (int x = 0; x < moduleCount; x++) {
@@ -415,7 +420,8 @@ String _generateQrSvg(String data) {
         if (qrImage.isDark(y, x)) {
           final px = x * dotSize;
           final py = y * dotSize;
-          sb.write('<rect x="$px" y="$py" width="$dotSize" height="$dotSize" fill="#1565C0"/>');
+          sb.write(
+              '<rect x="$px" y="$py" width="$dotSize" height="$dotSize" fill="#1565C0"/>');
         }
       }
     }
