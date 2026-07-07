@@ -4,6 +4,8 @@ import 'genset_card.dart';
 import 'barcode_widget.dart';
 import 'scan_screen.dart';
 import 'package:image_picker/image_picker.dart';
+import 'printer_helper.dart';
+
 
 // URL GitHub Pages resmi untuk deploy
 const String kPublicBaseUrl = 'https://ariniarini2207-arch.github.io/webdp3a';
@@ -1900,6 +1902,18 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                       color: Colors.black87),
                   textAlign: TextAlign.center,
                 ),
+                const SizedBox(height: 8),
+                TextButton.icon(
+                  onPressed: () => printRoomLabelImpl(_room),
+                  icon: const Icon(Icons.print, size: 14, color: Color(0xFFE8776F)),
+                  label: const Text(
+                    'Cetak Label Ruangan',
+                    style: TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFFE8776F),
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
               ],
             ),
           ),
@@ -2071,6 +2085,19 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                               fontFamily: 'monospace',
                               fontWeight: FontWeight.w600),
                           textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 6),
+                        TextButton.icon(
+                          onPressed: () => printItemLabelImpl(item, _room),
+                          icon: const Icon(Icons.print, size: 14,
+                              color: Color(0xFF2A9D8F)),
+                          label: const Text(
+                            'Cetak Label Barang',
+                            style: TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFF2A9D8F),
+                                fontWeight: FontWeight.bold),
+                          ),
                         ),
                       ],
                     ),
@@ -2481,6 +2508,20 @@ class PublicItemScreen extends StatelessWidget {
                                 color: Color(0xFF555555),
                                 height: 1.4,
                                 fontWeight: FontWeight.w500),
+                          ),
+                          const SizedBox(height: 10),
+                          ElevatedButton.icon(
+                            onPressed: () => printItemLabelImpl(item, room),
+                            icon: const Icon(Icons.print, size: 16),
+                            label: const Text('Cetak Label Aset'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF111111),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                            ),
                           ),
                         ],
                       ),

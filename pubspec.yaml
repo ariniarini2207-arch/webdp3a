@@ -11,6 +11,8 @@ dependencies:
     sdk: flutter
   qr_flutter: ^4.1.0
   barcode_widget: ^2.0.4
+  barcode: ^2.2.3
+  qr: ^3.0.1
   image_picker: ^1.0.7
   mobile_scanner: ^6.0.0
 dev_dependencies:
