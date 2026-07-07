@@ -12,7 +12,7 @@ const String kPublicBaseUrl = 'https://ariniarini2207-arch.github.io/webdp3a';
 
 // Supabase Configuration - REPLACE WITH YOUR CREDENTIALS
 const String kSupabaseUrl = 'https://rxjixgisdshfnkfyzaj.supabase.co';
-const String kSupabaseAnonKey = 'sb_publishable_TVTQxAX2YNtzTuogr_v1tg_llp4DJIU';
+const String kSupabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4aml4eGdpc2RzaGZua2Z5emFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzODE0MDMsImV4cCI6MjA5ODk1NzQwM30.po46YqhN0kYgIvB9KRsbJdynMLBGcmoY8tRxNpz7k1o';
 
 bool get isSupabaseConfigured {
   return kSupabaseUrl != 'YOUR_SUPABASE_URL' &&
