@@ -193,26 +193,7 @@ class _MainAppControllerState extends State<MainAppController> {
 
   @override
   Widget build(BuildContext context) {
-    // 1. Check Public Room View Route
-    if (_publicRoomId != null) {
-      return PublicRoomScreen(
-        roomId: _publicRoomId!,
-        rooms: _rooms,
-        onBackToLogin: () {
-          setState(() {
-            _publicRoomId = null;
-            _publicItemId = null;
-          });
-        },
-        onViewItem: (item) {
-          setState(() {
-            _publicItemId = item.id;
-          });
-        },
-      );
-    }
-
-    // 2. Check Public Item View Route
+    // 1. Check Public Item View Route
     if (_publicItemId != null) {
       Item? foundItem;
       Room? foundRoom;
@@ -262,6 +243,25 @@ class _MainAppControllerState extends State<MainAppController> {
           ),
         );
       }
+    }
+
+    // 2. Check Public Room View Route
+    if (_publicRoomId != null) {
+      return PublicRoomScreen(
+        roomId: _publicRoomId!,
+        rooms: _rooms,
+        onBackToLogin: () {
+          setState(() {
+            _publicRoomId = null;
+            _publicItemId = null;
+          });
+        },
+        onViewItem: (item) {
+          setState(() {
+            _publicItemId = item.id;
+          });
+        },
+      );
     }
 
     // 3. Admin view (Standard Flow)
@@ -2317,15 +2317,6 @@ class PublicRoomScreen extends StatelessWidget {
         backgroundColor: const Color(0xFF111111),
         foregroundColor: Colors.white,
         title: Text('GENSET Ruangan: ${room.name}'),
-        actions: [
-          TextButton.icon(
-            onPressed: onBackToLogin,
-            icon: const Icon(Icons.admin_panel_settings, color: Colors.white),
-            label: const Text('Login Admin',
-                style: TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.bold)),
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -2405,8 +2396,33 @@ class PublicRoomScreen extends StatelessWidget {
                                 color: const Color(0xFFC9E12C).withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(Icons.inventory_2,
-                                  color: Color(0xFF111111)),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: item.fotoUrl.isNotEmpty
+                                    ? (item.fotoUrl.startsWith('http') ||
+                                            item.fotoUrl.startsWith('blob:') ||
+                                            item.fotoUrl.startsWith('data:'))
+                                        ? Image.network(
+                                            item.fotoUrl,
+                                            width: 40,
+                                            height: 40,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) =>
+                                                const Icon(Icons.inventory_2,
+                                                    color: Color(0xFF111111)),
+                                          )
+                                        : Image.asset(
+                                            item.fotoUrl,
+                                            width: 40,
+                                            height: 40,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) =>
+                                                const Icon(Icons.inventory_2,
+                                                    color: Color(0xFF111111)),
+                                          )
+                                    : const Icon(Icons.inventory_2,
+                                        color: Color(0xFF111111)),
+                              ),
                             ),
                             title: Text(
                               item.jenisBarang,
@@ -2508,20 +2524,6 @@ class PublicItemScreen extends StatelessWidget {
                                 color: Color(0xFF555555),
                                 height: 1.4,
                                 fontWeight: FontWeight.w500),
-                          ),
-                          const SizedBox(height: 10),
-                          ElevatedButton.icon(
-                            onPressed: () => printItemLabelImpl(item, room),
-                            icon: const Icon(Icons.print, size: 16),
-                            label: const Text('Cetak Label Aset'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF111111),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8)),
-                            ),
                           ),
                         ],
                       ),
