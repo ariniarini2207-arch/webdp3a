@@ -445,11 +445,13 @@ String _generateBarcodeSvg(String data) {
 
 String _generateQrSvg(String data) {
   try {
-    final qr = QrCode(4, QrErrorCorrectLevel.M);
-    qr.addData(data);
-    qr.make();
+    final qrCode = QrCode.fromData(
+      data: data,
+      errorCorrectLevel: QrErrorCorrectLevel.M,
+    );
+    final qrImage = QrImage(qrCode);
     
-    final moduleCount = qr.moduleCount;
+    final moduleCount = qrImage.moduleCount;
     final size = 150.0;
     final dotSize = size / moduleCount;
     
@@ -459,7 +461,7 @@ String _generateQrSvg(String data) {
     
     for (int x = 0; x < moduleCount; x++) {
       for (int y = 0; y < moduleCount; y++) {
-        if (qr.isDark(y, x)) {
+        if (qrImage.isDark(y, x)) {
           final px = x * dotSize;
           final py = y * dotSize;
           sb.write('<rect x="$px" y="$py" width="$dotSize" height="$dotSize" fill="black"/>');
