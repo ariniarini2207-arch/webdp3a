@@ -1,5 +1,4 @@
 // ignore_for_file: avoid_web_libraries_in_flutter
-import 'dart:convert';
 import 'dart:html' as html;
 import 'package:barcode/barcode.dart';
 import 'package:qr/qr.dart';
@@ -217,9 +216,12 @@ void printItemLabelImpl(Item item, Room room) {
 </html>
 ''';
 
-  final base64Content = base64Encode(utf8.encode(htmlContent));
-  final dataUri = 'data:text/html;base64,$base64Content';
-  html.window.open(dataUri, 'label-${item.id}', 'width=600,height=500');
+  final popup = html.window.open('', 'label-${item.id}', 'width=620,height=520');
+  if (popup != null) {
+    popup.document.open();
+    popup.document.write(htmlContent);
+    popup.document.close();
+  }
 }
 
 void printRoomLabelImpl(Room room) {
@@ -429,9 +431,12 @@ void printRoomLabelImpl(Room room) {
 </html>
 ''';
 
-  final base64Content = base64Encode(utf8.encode(htmlContent));
-  final dataUri = 'data:text/html;base64,$base64Content';
-  html.window.open(dataUri, 'label-ruang-${room.id}', 'width=600,height=500');
+  final popup = html.window.open('', 'label-ruang-${room.id}', 'width=620,height=520');
+  if (popup != null) {
+    popup.document.open();
+    popup.document.write(htmlContent);
+    popup.document.close();
+  }
 }
 
 String _generateBarcodeSvg(String data) {
