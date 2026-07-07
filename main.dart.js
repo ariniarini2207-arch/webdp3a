@@ -26251,7 +26251,7 @@ s=q}for(;;)switch(s){case 0:if($.a2==null)A.aqk()
 $.a2.toString
 q=3
 s=6
-return A.p(A.aoc("sb_publishable_cQzd9C9-ZmIgNgMEMIdQOQ_u1S2i07H","https://ouhynvpeypflothnoozx.supabase.co"),$async$aCL)
+return A.p(A.aoc("sb_publishable_TVTQxAX2YNtzTuogr_v1tg_llp4DJIU","https://rxjixgisdshfnkfyzaj.supabase.co"),$async$aCL)
 case 6:q=1
 s=5
 break
