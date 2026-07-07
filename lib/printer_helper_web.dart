@@ -216,7 +216,7 @@ void printItemLabelImpl(Item item, Room room) {
 </html>
 ''';
 
-  final popup = html.window.open('', 'label-${item.id}', 'width=620,height=520');
+  final popup = html.window.open('', 'label-${item.id}', 'width=620,height=520') as html.Window?;
   if (popup != null) {
     popup.document.open();
     popup.document.write(htmlContent);
@@ -431,7 +431,7 @@ void printRoomLabelImpl(Room room) {
 </html>
 ''';
 
-  final popup = html.window.open('', 'label-ruang-${room.id}', 'width=620,height=520');
+  final popup = html.window.open('', 'label-ruang-${room.id}', 'width=620,height=520') as html.Window?;
   if (popup != null) {
     popup.document.open();
     popup.document.write(htmlContent);
