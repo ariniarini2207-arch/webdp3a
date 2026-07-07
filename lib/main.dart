@@ -11,8 +11,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 const String kPublicBaseUrl = 'https://ariniarini2207-arch.github.io/webdp3a';
 
 // Supabase Configuration - REPLACE WITH YOUR CREDENTIALS
-const String kSupabaseUrl = 'https://ouhynvpeypflothnoozx.supabase.co';
-const String kSupabaseAnonKey = 'sb_publishable_cQzd9C9-ZmIgNgMEMIdQOQ_u1S2i07H';
+const String kSupabaseUrl = 'https://rxjixgisdshfnkfyzaj.supabase.co';
+const String kSupabaseAnonKey = 'sb_publishable_TVTQxAX2YNtzTuogr_v1tg_llp4DJIU';
 
 bool get isSupabaseConfigured {
   return kSupabaseUrl != 'YOUR_SUPABASE_URL' &&
