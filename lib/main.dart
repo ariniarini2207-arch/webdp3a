@@ -5,10 +5,21 @@ import 'barcode_widget.dart';
 import 'scan_screen.dart';
 import 'package:image_picker/image_picker.dart';
 import 'printer_helper.dart';
-
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 // URL GitHub Pages resmi untuk deploy
 const String kPublicBaseUrl = 'https://ariniarini2207-arch.github.io/webdp3a';
+
+// Supabase Configuration - REPLACE WITH YOUR CREDENTIALS
+const String kSupabaseUrl = 'YOUR_SUPABASE_URL';
+const String kSupabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
+
+bool get isSupabaseConfigured {
+  return kSupabaseUrl != 'YOUR_SUPABASE_URL' &&
+      kSupabaseAnonKey != 'YOUR_SUPABASE_ANON_KEY' &&
+      kSupabaseUrl.isNotEmpty &&
+      kSupabaseAnonKey.isNotEmpty;
+}
 
 String generateRoomUrl(String roomId) {
   return '$kPublicBaseUrl/?room=$roomId';
@@ -18,9 +29,23 @@ String generateItemUrl(String itemId) {
   return '$kPublicBaseUrl/?item=$itemId';
 }
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  try {
+    if (isSupabaseConfigured) {
+      await Supabase.initialize(
+        url: kSupabaseUrl,
+        anonKey: kSupabaseAnonKey,
+      );
+    }
+  } catch (e) {
+    debugPrint('Supabase Init Error: $e');
+  }
+
   runApp(const MyApp());
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -54,9 +79,11 @@ class MainAppController extends StatefulWidget {
 }
 
 class _MainAppControllerState extends State<MainAppController> {
+  bool _isLoading = false;
   bool _isAdminLoggedIn = false;
   String? _publicRoomId;
   String? _publicItemId;
+
 
   // Simulated database of rooms & items
   List<Room> _rooms = [];
@@ -64,9 +91,74 @@ class _MainAppControllerState extends State<MainAppController> {
   @override
   void initState() {
     super.initState();
-    _loadSampleData();
+    _initData();
     _checkUrlRouting();
   }
+
+  Future<void> _initData() async {
+    if (isSupabaseConfigured) {
+      await _fetchDataFromSupabase();
+    } else {
+      _loadSampleData();
+    }
+  }
+
+  Future<void> _fetchDataFromSupabase() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final client = Supabase.instance.client;
+
+      // Fetch rooms
+      final roomsResponse = await client.from('rooms').select().order('name');
+      
+      // Fetch items
+      final itemsResponse = await client.from('items').select();
+
+      final List<Room> loadedRooms = [];
+      for (var roomData in roomsResponse) {
+        final roomId = roomData['id'] as String;
+        final roomItemsData = (itemsResponse as List)
+            .where((item) => item['room_id'] == roomId)
+            .toList();
+        
+        final roomItems = roomItemsData.map((itemData) {
+          return Item(
+            id: itemData['id'] ?? '',
+            jenisBarang: itemData['jenis_barang'] ?? '',
+            merekModel: itemData['merek_model'] ?? '',
+            kodeBarang: itemData['kode_barang'] ?? '',
+            namaPengguna: itemData['nama_pengguna'] ?? '',
+            nipPengguna: itemData['nip_pengguna'] ?? '',
+            teleponPengguna: itemData['telepon_pengguna'] ?? '',
+            fotoUrl: itemData['foto_url'] ?? '',
+            barcode: itemData['barcode'] ?? '',
+          );
+        }).toList();
+
+        loadedRooms.add(Room(
+          id: roomId,
+          name: roomData['name'] ?? '',
+          year: roomData['year'] ?? '',
+          barcode: roomData['barcode'] ?? '',
+          items: roomItems,
+        ));
+      }
+
+      setState(() {
+        _rooms = loadedRooms;
+      });
+    } catch (e) {
+      debugPrint('Error fetching data from Supabase: $e');
+      _loadSampleData();
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
 
   void _checkUrlRouting() {
     final queryParams = Uri.base.queryParameters;
@@ -193,6 +285,16 @@ class _MainAppControllerState extends State<MainAppController> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A9D8F)),
+          ),
+        ),
+      );
+    }
+
     // 1. Check Public Item View Route
     if (_publicItemId != null) {
       Item? foundItem;
@@ -991,7 +1093,7 @@ class DashboardScreen extends StatelessWidget {
               child: const Text('Batal'),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (formKey.currentState!.validate()) {
                   final newRoom = Room(
                     id: 'room-${DateTime.now().millisecondsSinceEpoch}',
@@ -1001,6 +1103,20 @@ class DashboardScreen extends StatelessWidget {
                         'RM-${nameController.text.toUpperCase().replaceAll(' ', '-')}-${yearController.text}',
                     items: [],
                   );
+
+                  if (isSupabaseConfigured) {
+                    try {
+                      await Supabase.instance.client.from('rooms').insert({
+                        'id': newRoom.id,
+                        'name': newRoom.name,
+                        'year': newRoom.year,
+                        'barcode': newRoom.barcode,
+                      });
+                    } catch (e) {
+                      debugPrint('Supabase Room Insert Error: $e');
+                    }
+                  }
+
                   onRoomsChanged([...rooms, newRoom]);
                   Navigator.pop(context);
                 }
@@ -1062,15 +1178,31 @@ class DashboardScreen extends StatelessWidget {
               child: const Text('Batal'),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (formKey.currentState!.validate()) {
+                  final editedBarcode = 'RM-${nameController.text.toUpperCase().replaceAll(' ', '-')}-${yearController.text}';
+
+                  if (isSupabaseConfigured) {
+                    try {
+                      await Supabase.instance.client
+                          .from('rooms')
+                          .update({
+                            'name': nameController.text,
+                            'year': yearController.text,
+                            'barcode': editedBarcode,
+                          })
+                          .eq('id', room.id);
+                    } catch (e) {
+                      debugPrint('Supabase Room Update Error: $e');
+                    }
+                  }
+
                   final updatedRooms = rooms.map((r) {
                     if (r.id == room.id) {
                       return r.copyWith(
                         name: nameController.text,
                         year: yearController.text,
-                        barcode:
-                            'RM-${nameController.text.toUpperCase().replaceAll(' ', '-')}-${yearController.text}',
+                        barcode: editedBarcode,
                       );
                     }
                     return r;
@@ -1087,7 +1219,17 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  void _deleteRoom(Room room) {
+  void _deleteRoom(Room room) async {
+    if (isSupabaseConfigured) {
+      try {
+        await Supabase.instance.client
+            .from('rooms')
+            .delete()
+            .eq('id', room.id);
+      } catch (e) {
+        debugPrint('Supabase Room Delete Error: $e');
+      }
+    }
     final updated = rooms.where((r) => r.id != room.id).toList();
     onRoomsChanged(updated);
   }
@@ -1665,12 +1807,12 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                               ),
                               const SizedBox(width: 12),
                               ElevatedButton.icon(
-                                onPressed: () {
+                                onPressed: () async {
                                   if (formKey.currentState!.validate()) {
                                     final newItem = Item(
                                       id: isEditing
                                           ? itemToEdit.id
-                                          : 'item-\${DateTime.now().millisecondsSinceEpoch}',
+                                          : 'item-${DateTime.now().millisecondsSinceEpoch}',
                                       jenisBarang: jenisController.text,
                                       merekModel: merekController.text,
                                       kodeBarang: kodeController.text,
@@ -1678,9 +1820,46 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                       nipPengguna: nipUserController.text,
                                       teleponPengguna: telpUserController.text,
                                       fotoUrl: fotoController.text,
-                                      // barcode otomatis = kode barang
                                       barcode: kodeController.text,
                                     );
+
+                                    if (isSupabaseConfigured) {
+                                      try {
+                                        if (isEditing) {
+                                          await Supabase.instance.client
+                                              .from('items')
+                                              .update({
+                                                'jenis_barang': newItem.jenisBarang,
+                                                'merek_model': newItem.merekModel,
+                                                'kode_barang': newItem.kodeBarang,
+                                                'nama_pengguna': newItem.namaPengguna,
+                                                'nip_pengguna': newItem.nipPengguna,
+                                                'telepon_pengguna': newItem.teleponPengguna,
+                                                'foto_url': newItem.fotoUrl,
+                                                'barcode': newItem.barcode,
+                                              })
+                                              .eq('id', newItem.id);
+                                        } else {
+                                          await Supabase.instance.client
+                                              .from('items')
+                                              .insert({
+                                                'id': newItem.id,
+                                                'room_id': _room.id,
+                                                'jenis_barang': newItem.jenisBarang,
+                                                'merek_model': newItem.merekModel,
+                                                'kode_barang': newItem.kodeBarang,
+                                                'nama_pengguna': newItem.namaPengguna,
+                                                'nip_pengguna': newItem.nipPengguna,
+                                                'telepon_pengguna': newItem.teleponPengguna,
+                                                'foto_url': newItem.fotoUrl,
+                                                'barcode': newItem.barcode,
+                                              });
+                                        }
+                                      } catch (e) {
+                                        debugPrint('Supabase Item Add/Edit Error: $e');
+                                      }
+                                    }
+
                                     setState(() {
                                       List<Item> updatedItems;
                                       if (isEditing) {
@@ -1815,7 +1994,17 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
     );
   }
 
-  void _deleteItem(Item item) {
+  void _deleteItem(Item item) async {
+    if (isSupabaseConfigured) {
+      try {
+        await Supabase.instance.client
+            .from('items')
+            .delete()
+            .eq('id', item.id);
+      } catch (e) {
+        debugPrint('Supabase Item Delete Error: $e');
+      }
+    }
     setState(() {
       final updated = _room.items.where((i) => i.id != item.id).toList();
       _room = _room.copyWith(items: updated);
