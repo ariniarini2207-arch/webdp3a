@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'models.dart';
 import 'genset_card.dart';
 import 'barcode_widget.dart';
@@ -64,7 +65,6 @@ class MyApp extends StatelessWidget {
           surface: Colors.white,
           background: const Color(0xFFF9F9FB),
         ),
-        fontFamily: 'Arial',
       ),
       home: const MainAppController(),
     );
@@ -83,6 +83,7 @@ class _MainAppControllerState extends State<MainAppController> {
   bool _isAdminLoggedIn = false;
   String? _publicRoomId;
   String? _publicItemId;
+  String? _selectedItemId;
 
 
   // Simulated database of rooms & items
@@ -196,18 +197,26 @@ class _MainAppControllerState extends State<MainAppController> {
     final cleanedText = scannedText.trim();
 
     // Cari item berdasarkan kodeBarang atau barcode
+    bool hasItemMatch = false;
     for (var r in _rooms) {
       for (var i in r.items) {
         if (i.kodeBarang.trim() == cleanedText ||
             i.barcode.trim() == cleanedText ||
             i.id.trim() == cleanedText) {
-          setState(() {
-            _publicItemId = i.id;
-            _publicRoomId = null;
-          });
-          return;
+          hasItemMatch = true;
+          break;
         }
       }
+      if (hasItemMatch) break;
+    }
+
+    if (hasItemMatch) {
+      setState(() {
+        _publicItemId = cleanedText;
+        _publicRoomId = null;
+        _selectedItemId = null;
+      });
+      return;
     }
 
     // Cari ruangan berdasarkan barcode atau ID
@@ -280,6 +289,26 @@ class _MainAppControllerState extends State<MainAppController> {
           ),
         ],
       ),
+      Room(
+        id: 'room-3',
+        name: 'Ruang IT',
+        year: '2024',
+        barcode: 'RM-IT-2024',
+        items: [
+          Item(
+            id: 'item-3',
+            jenisBarang: 'PC All-in-One',
+            merekModel: 'HP Pavilion 24',
+            kodeBarang: '1.3.2.10.02.03.003',
+            namaPengguna: 'Rahmat Hidayat, S. Kom.',
+            nipPengguna: '19920815 201803 I 003',
+            teleponPengguna: '0812-9876-5432',
+            fotoUrl:
+                'https://images.unsplash.com/photo-1547082299-de196ea013d6?q=80&w=400&auto=format&fit=crop',
+            barcode: '1.3.2.10.02.03.003',
+          ),
+        ],
+      ),
     ];
   }
 
@@ -297,25 +326,64 @@ class _MainAppControllerState extends State<MainAppController> {
 
     // 1. Check Public Item View Route
     if (_publicItemId != null) {
-      Item? foundItem;
-      Room? foundRoom;
+      final List<MapEntry<Item, Room>> matchedItems = [];
       for (var r in _rooms) {
         for (var i in r.items) {
-          if (i.id == _publicItemId) {
-            foundItem = i;
-            foundRoom = r;
-            break;
+          if (i.id == _publicItemId ||
+              i.kodeBarang.trim() == _publicItemId!.trim() ||
+              i.barcode.trim() == _publicItemId!.trim()) {
+            matchedItems.add(MapEntry(i, r));
           }
         }
       }
 
-      if (foundItem != null && foundRoom != null) {
-        return PublicItemScreen(
-          item: foundItem,
-          room: foundRoom,
+      if (matchedItems.isNotEmpty) {
+        if (_selectedItemId != null) {
+          final selectedEntry = matchedItems.firstWhere(
+            (entry) => entry.key.id == _selectedItemId,
+            orElse: () => matchedItems.first,
+          );
+          return PublicItemScreen(
+            item: selectedEntry.key,
+            room: selectedEntry.value,
+            onBack: () {
+              setState(() {
+                if (matchedItems.length > 1) {
+                  _selectedItemId = null;
+                } else {
+                  _publicItemId = null;
+                  _selectedItemId = null;
+                }
+              });
+            },
+          );
+        }
+
+        if (matchedItems.length == 1) {
+          return PublicItemScreen(
+            item: matchedItems.first.key,
+            room: matchedItems.first.value,
+            onBack: () {
+              setState(() {
+                _publicItemId = null;
+                _selectedItemId = null;
+              });
+            },
+          );
+        }
+
+        return PublicItemListScreen(
+          scannedCode: _publicItemId!,
+          matchedItems: matchedItems,
           onBack: () {
             setState(() {
               _publicItemId = null;
+              _selectedItemId = null;
+            });
+          },
+          onViewItem: (item) {
+            setState(() {
+              _selectedItemId = item.id;
             });
           },
         );
@@ -336,6 +404,7 @@ class _MainAppControllerState extends State<MainAppController> {
                     setState(() {
                       _publicItemId = null;
                       _publicRoomId = null;
+                      _selectedItemId = null;
                     });
                   },
                   child: const Text('Ke Halaman Utama'),
@@ -1483,16 +1552,8 @@ class DashboardScreen extends StatelessWidget {
                                                 builder: (context) =>
                                                     RoomDetailsScreen(
                                                   room: room,
-                                                  onRoomUpdated: (updatedRoom) {
-                                                    final updated =
-                                                        rooms.map((r) {
-                                                      return r.id ==
-                                                              updatedRoom.id
-                                                          ? updatedRoom
-                                                          : r;
-                                                    }).toList();
-                                                    onRoomsChanged(updated);
-                                                  },
+                                                  allRooms: rooms,
+                                                  onRoomsChanged: onRoomsChanged,
                                                 ),
                                               ),
                                             );
@@ -1527,12 +1588,14 @@ class DashboardScreen extends StatelessWidget {
 // ----------------------------------------------------
 class RoomDetailsScreen extends StatefulWidget {
   final Room room;
-  final ValueChanged<Room> onRoomUpdated;
+  final ValueChanged<List<Room>> onRoomsChanged;
+  final List<Room> allRooms;
 
   const RoomDetailsScreen({
     Key? key,
     required this.room,
-    required this.onRoomUpdated,
+    required this.onRoomsChanged,
+    required this.allRooms,
   }) : super(key: key);
 
   @override
@@ -1548,14 +1611,41 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
     _room = widget.room;
   }
 
+  /// Generate kode barang otomatis berdasarkan prefix standar + nomor urut
+  String _generateNextKodeBarang() {
+    const prefix = '1.3.2.10.02.01.';
+    // Kumpulkan semua kode barang yang ada di seluruh ruangan
+    final allKodes = widget.allRooms
+        .expand((r) => r.items)
+        .map((i) => i.kodeBarang)
+        .toList();
+
+    // Cari nomor urut tertinggi dari kode dengan prefix yang sama
+    int maxNum = 0;
+    for (final kode in allKodes) {
+      if (kode.startsWith(prefix)) {
+        final suffix = kode.substring(prefix.length);
+        final num = int.tryParse(suffix);
+        if (num != null && num > maxNum) maxNum = num;
+      }
+    }
+    // Nomor urut berikutnya, format 3 digit
+    return '$prefix${(maxNum + 1).toString().padLeft(3, '0')}';
+  }
+
   void _showAddEditItemDialog({Item? itemToEdit}) {
     final isEditing = itemToEdit != null;
     final jenisController =
         TextEditingController(text: itemToEdit?.jenisBarang ?? '');
     final merekController =
         TextEditingController(text: itemToEdit?.merekModel ?? '');
+
+    // Kode barang selalu auto-generate (berlaku untuk tambah & edit)
+    // User bisa matikan toggle jika ingin input manual
+    bool autoGenerateKode = true;
     final kodeController = TextEditingController(
-        text: itemToEdit?.kodeBarang ?? '1.3.2.10.02.01.009');
+        text: isEditing ? itemToEdit.kodeBarang : '');
+
     final namaUserController =
         TextEditingController(text: itemToEdit?.namaPengguna ?? '');
     final nipUserController =
@@ -1566,6 +1656,125 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
         TextEditingController(text: itemToEdit?.fotoUrl ?? '');
     // barcode is auto-generated from kodeBarang — no separate controller needed
     final formKey = GlobalKey<FormState>();
+    bool isUploadingFoto = false;
+
+    // Variabel state lokal dialog untuk pencarian autofill
+    Item? matchedItem;
+    Room? matchedRoom;
+
+    // Helper untuk mencari barang dengan semua data yang sama (kecuali foto)
+    Item? findItemByAllData(String jenis, String merek, String nama, String nip, String telp) {
+      final j = jenis.trim().toLowerCase();
+      final m = merek.trim().toLowerCase();
+      final n = nama.trim().toLowerCase();
+      final ni = nip.trim();
+      final t = telp.trim();
+      if (j.isEmpty || m.isEmpty) return null;
+      for (var r in widget.allRooms) {
+        for (var i in r.items) {
+          if (i.jenisBarang.trim().toLowerCase() == j &&
+              i.merekModel.trim().toLowerCase() == m &&
+              i.namaPengguna.trim().toLowerCase() == n &&
+              i.nipPengguna.trim() == ni &&
+              i.teleponPengguna.trim() == t &&
+              i.id != itemToEdit?.id) {
+            return i;
+          }
+        }
+      }
+      return null;
+    }
+
+    // Backward-compat: cari berdasarkan jenis+merek saja (untuk validator)
+    Item? findItemByModel(String jenis, String merek) {
+      final j = jenis.trim().toLowerCase();
+      final m = merek.trim().toLowerCase();
+      if (j.isEmpty || m.isEmpty) return null;
+      for (var r in widget.allRooms) {
+        for (var i in r.items) {
+          if (i.jenisBarang.trim().toLowerCase() == j &&
+              i.merekModel.trim().toLowerCase() == m &&
+              i.id != itemToEdit?.id) {
+            return i;
+          }
+        }
+      }
+      return null;
+    }
+
+    void updateKodeBarang() {
+      if (!autoGenerateKode) return;
+      final jenis = jenisController.text.trim();
+      final merek = merekController.text.trim();
+      final nama = namaUserController.text.trim();
+      final nip = nipUserController.text.trim();
+      final telp = telpUserController.text.trim();
+
+      // Kode hanya di-generate setelah jenis, merek, dan nama terisi
+      if (jenis.isEmpty || merek.isEmpty || nama.isEmpty) {
+        kodeController.text = '';
+        return;
+      }
+
+      // Cari barang dengan semua data yang sama (kecuali foto)
+      final matched = findItemByAllData(jenis, merek, nama, nip, telp);
+      if (matched != null) {
+        // Gunakan kode barang yang sama dengan barang serupa
+        kodeController.text = matched.kodeBarang;
+      } else {
+        // Tidak ada yang cocok — cek apakah data sama dengan original (saat edit)
+        if (isEditing) {
+          final sameJenis = jenis.toLowerCase() == itemToEdit.jenisBarang.trim().toLowerCase();
+          final sameMerek = merek.toLowerCase() == itemToEdit.merekModel.trim().toLowerCase();
+          final samaNama = nama.toLowerCase() == itemToEdit.namaPengguna.trim().toLowerCase();
+          final samaNip = nip == itemToEdit.nipPengguna.trim();
+          final samaTelp = telp == itemToEdit.teleponPengguna.trim();
+          if (sameJenis && sameMerek && samaNama && samaNip && samaTelp) {
+            // Data tidak berubah — pakai kode lama
+            kodeController.text = itemToEdit.kodeBarang;
+            return;
+          }
+        }
+        // Data baru / berbeda — generate kode urut berikutnya
+        kodeController.text = _generateNextKodeBarang();
+      }
+    }
+
+    void performAutofillLookup(String val, StateSetter dialogSetState) {
+      if (val.trim().isEmpty) {
+        dialogSetState(() {
+          matchedItem = null;
+          matchedRoom = null;
+        });
+        return;
+      }
+      Item? foundItem;
+      Room? foundRoom;
+      for (var r in widget.allRooms) {
+        for (var i in r.items) {
+          if (i.kodeBarang.trim() == val.trim() && i.id != itemToEdit?.id) {
+            foundItem = i;
+            foundRoom = r;
+            break;
+          }
+        }
+        if (foundItem != null) break;
+      }
+
+      dialogSetState(() {
+        matchedItem = foundItem;
+        matchedRoom = foundRoom;
+      });
+
+      if (foundItem != null) {
+        jenisController.text = foundItem.jenisBarang;
+        merekController.text = foundItem.merekModel;
+        namaUserController.text = foundItem.namaPengguna;
+        nipUserController.text = foundItem.nipPengguna;
+        telpUserController.text = foundItem.teleponPengguna;
+        fotoController.text = foundItem.fotoUrl;
+      }
+    }
 
     InputDecoration themedInput(String label, IconData icon) {
       return InputDecoration(
@@ -1599,9 +1808,15 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           insetPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final isWide = constraints.maxWidth >= 760;
+          child: StatefulBuilder(
+            builder: (context, dialogSetState) {
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  final isWide = constraints.maxWidth >= 760;
+                  final isCodeLocked = autoGenerateKode ||
+                      findItemByModel(
+                              jenisController.text, merekController.text) !=
+                          null;
 
               Widget livePreview = AnimatedBuilder(
                 animation: Listenable.merge([
@@ -1694,108 +1909,335 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                       ),
                     ),
 
-                    // Form fields
-                    Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _sectionLabel(
-                              'Informasi Barang',
-                              Icons.inventory_2_outlined,
-                              const Color(0xFFE8776F)),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            controller: jenisController,
-                            decoration: themedInput(
-                                'Jenis Barang (Contoh: Serial Printer)',
-                                Icons.category_outlined),
-                            validator: (v) => v!.isEmpty ? 'Wajib diisi' : null,
-                          ),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            controller: merekController,
-                            decoration: themedInput(
-                                'Merek / Model (Contoh: Epson L5290)',
-                                Icons.devices_outlined),
-                            validator: (v) => v!.isEmpty ? 'Wajib diisi' : null,
-                          ),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            controller: kodeController,
-                            decoration: themedInput(
-                                'Kode Barang', Icons.qr_code_outlined),
-                            validator: (v) => v!.isEmpty ? 'Wajib diisi' : null,
-                          ),
-                          const SizedBox(height: 10),
-                          // Barcode dibuat otomatis dari Kode Barang
-                          const SizedBox(height: 20),
-                          _sectionLabel(
-                              'Data Pengguna',
-                              Icons.person_outline_rounded,
-                              const Color(0xFF2A9D8F)),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            controller: namaUserController,
-                            decoration: themedInput(
-                                'Nama Pengguna', Icons.badge_outlined),
-                          ),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            controller: nipUserController,
-                            decoration: themedInput(
-                                'NIP / ID Pengguna', Icons.numbers_outlined),
-                          ),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            controller: telpUserController,
-                            decoration: themedInput(
-                                'Telepon Pengguna', Icons.phone_outlined),
-                          ),
-                          const SizedBox(height: 20),
-                          _sectionLabel(
-                              'Foto Barang',
-                              Icons.photo_camera_outlined,
-                              const Color(0xFFE8776F)),
-                          const SizedBox(height: 10),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
+                        // Form fields
+                        Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Expanded(
-                                child: TextFormField(
-                                  controller: fotoController,
-                                  decoration: themedInput(
-                                      'URL Foto / Path File Gambar',
-                                      Icons.link_outlined),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              ElevatedButton.icon(
-                                onPressed: () async {
-                                  final ImagePicker picker = ImagePicker();
-                                  final XFile? image = await picker.pickImage(
-                                    source: ImageSource.gallery,
-                                    imageQuality: 85,
-                                  );
-                                  if (image != null) {
-                                    fotoController.text = image.path;
-                                  }
+                              _sectionLabel(
+                                  'Informasi Barang',
+                                  Icons.inventory_2_outlined,
+                                  const Color(0xFFE8776F)),
+                              const SizedBox(height: 10),
+                              TextFormField(
+                                controller: jenisController,
+                                decoration: themedInput(
+                                    'Jenis Barang (Contoh: Serial Printer)',
+                                    Icons.category_outlined),
+                                validator: (v) => v!.isEmpty ? 'Wajib diisi' : null,
+                                onChanged: (val) {
+                                  dialogSetState(() {
+                                    updateKodeBarang();
+                                  });
                                 },
-                                icon: const Icon(Icons.photo_library_outlined,
-                                    size: 16),
-                                label: const Text('Pilih'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF2A9D8F),
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10)),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 14, vertical: 15),
-                                ),
                               ),
-                            ],
-                          ),
+                              const SizedBox(height: 10),
+                              TextFormField(
+                                controller: merekController,
+                                decoration: themedInput(
+                                    'Merek / Model (Contoh: Epson L5290)',
+                                    Icons.devices_outlined),
+                                validator: (v) => v!.isEmpty ? 'Wajib diisi' : null,
+                                onChanged: (val) {
+                                  dialogSetState(() {
+                                    updateKodeBarang();
+                                  });
+                                },
+                              ),
+                              const SizedBox(height: 10),
+                              // ── Kode Barang dengan toggle auto/manual ──
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Toggle row
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF0FBF9),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                          color: const Color(0xFF2A9D8F)
+                                              .withOpacity(0.3)),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.auto_fix_high,
+                                            size: 16,
+                                            color: Color(0xFF2A9D8F)),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            autoGenerateKode
+                                                ? 'Kode dibuat otomatis'
+                                                : 'Masukkan kode manual',
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                              color: Color(0xFF2A9D8F),
+                                            ),
+                                          ),
+                                        ),
+                                        Switch(
+                                          value: autoGenerateKode,
+                                          activeColor:
+                                              const Color(0xFF2A9D8F),
+                                          onChanged: (val) {
+                                            dialogSetState(() {
+                                              autoGenerateKode = val;
+                                              if (val) {
+                                                updateKodeBarang();
+                                              } else {
+                                                if (!isEditing) {
+                                                  kodeController.clear();
+                                                }
+                                                matchedItem = null;
+                                                matchedRoom = null;
+                                              }
+                                            });
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  TextFormField(
+                                    controller: kodeController,
+                                    readOnly: isCodeLocked,
+                                    style: TextStyle(
+                                      color: isCodeLocked
+                                          ? const Color(0xFF555555)
+                                          : const Color(0xFF111111),
+                                    ),
+                                    onChanged: (val) {
+                                      performAutofillLookup(val, dialogSetState);
+                                    },
+                                    decoration: themedInput(
+                                      'Kode Barang',
+                                      Icons.qr_code_outlined,
+                                    ).copyWith(
+                                      suffixIcon: isCodeLocked
+                                          ? const Tooltip(
+                                              message:
+                                                  'Kode dikunci / dibuat otomatis oleh sistem',
+                                              child: Icon(
+                                                Icons.lock_outline,
+                                                color: Color(0xFF2A9D8F),
+                                                size: 18,
+                                              ),
+                                            )
+                                          : null,
+                                      filled: true,
+                                      fillColor: isCodeLocked
+                                          ? const Color(0xFFEDF7F6)
+                                          : const Color(0xFFFFF8F4),
+                                    ),
+                                    validator: (v) {
+                                      if (v == null || v.trim().isEmpty) {
+                                        return 'Kode barang wajib diisi';
+                                      }
+
+                                      final trimmedVal = v.trim();
+                                      final currentJenis = jenisController.text.trim();
+                                      final currentMerek = merekController.text.trim();
+
+                                      // 1. Cek apakah ada item lain dengan jenis & merek yang sama
+                                      final matchedModel = findItemByModel(currentJenis, currentMerek);
+                                      if (matchedModel != null) {
+                                        if (matchedModel.kodeBarang.trim() != trimmedVal) {
+                                          return 'Jenis & merek ini sudah ada dengan kode "${matchedModel.kodeBarang}". Kode harus sama!';
+                                        }
+                                      }
+
+                                      // 2. Cek apakah kode ini sudah digunakan oleh barang dengan jenis/merek lain
+                                      Item? sameCodeItem;
+                                      for (var r in widget.allRooms) {
+                                        for (var i in r.items) {
+                                          if (i.kodeBarang.trim() == trimmedVal && i.id != itemToEdit?.id) {
+                                            sameCodeItem = i;
+                                            break;
+                                          }
+                                        }
+                                        if (sameCodeItem != null) break;
+                                      }
+
+                                      if (sameCodeItem != null) {
+                                        final sameJenis = sameCodeItem.jenisBarang.trim().toLowerCase() ==
+                                            currentJenis.toLowerCase();
+                                        final sameMerek = sameCodeItem.merekModel.trim().toLowerCase() ==
+                                            currentMerek.toLowerCase();
+                                        if (!sameJenis || !sameMerek) {
+                                          return 'Kode ini milik "${sameCodeItem.jenisBarang} - ${sameCodeItem.merekModel}". Nama & Merek harus sama!';
+                                        }
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  if (matchedRoom != null && matchedRoom!.id != _room.id) ...[
+                                    const SizedBox(height: 8),
+                                    Container(
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFFF3CD),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: const Color(0xFFFFEBAA)),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          const Icon(Icons.info_outline, color: Color(0xFF856404), size: 16),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              'Aset terdaftar di "${matchedRoom!.name}". Menyimpan akan memindahkan aset tersebut ke ruangan ini.',
+                                              style: const TextStyle(
+                                                fontSize: 11,
+                                                color: Color(0xFF856404),
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              const SizedBox(height: 20),
+                              _sectionLabel(
+                                  'Data Pengguna',
+                                  Icons.person_outline_rounded,
+                                  const Color(0xFF2A9D8F)),
+                              const SizedBox(height: 10),
+                              TextFormField(
+                                controller: namaUserController,
+                                decoration: themedInput(
+                                    'Nama Pengguna', Icons.badge_outlined),
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                    RegExp(r"[a-zA-ZÀ-öø-ÿ\s.,\-']"),
+                                  ),
+                                ],
+                                keyboardType: TextInputType.name,
+                                textCapitalization: TextCapitalization.words,
+                                onChanged: (_) => dialogSetState(() => updateKodeBarang()),
+                              ),
+                              const SizedBox(height: 10),
+                              TextFormField(
+                                controller: nipUserController,
+                                decoration: themedInput(
+                                    'NIP / ID Pengguna', Icons.numbers_outlined),
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                    RegExp(r'[0-9\s\-]'),
+                                  ),
+                                ],
+                                keyboardType: TextInputType.number,
+                                onChanged: (_) => dialogSetState(() => updateKodeBarang()),
+                              ),
+                              const SizedBox(height: 10),
+                              TextFormField(
+                                controller: telpUserController,
+                                decoration: themedInput(
+                                    'Telepon Pengguna', Icons.phone_outlined),
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                    RegExp(r'[0-9\-]'),
+                                  ),
+                                  LengthLimitingTextInputFormatter(15),
+                                ],
+                                keyboardType: TextInputType.phone,
+                                onChanged: (_) => dialogSetState(() => updateKodeBarang()),
+                              ),
+                              const SizedBox(height: 20),
+                              _sectionLabel(
+                                  'Foto Barang',
+                                  Icons.photo_camera_outlined,
+                                  const Color(0xFFE8776F)),
+                              const SizedBox(height: 10),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Expanded(
+                                    child: TextFormField(
+                                      controller: fotoController,
+                                      decoration: themedInput(
+                                          'URL Foto / Path File Gambar',
+                                          Icons.link_outlined),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  ElevatedButton.icon(
+                                    onPressed: isUploadingFoto ? null : () async {
+                                      final ImagePicker picker = ImagePicker();
+                                      final XFile? image = await picker.pickImage(
+                                        source: ImageSource.gallery,
+                                        imageQuality: 85,
+                                      );
+                                      if (image == null) return;
+                                      dialogSetState(() => isUploadingFoto = true);
+                                      try {
+                                        final bytes = await image.readAsBytes();
+                                        final ext = image.name.contains('.')
+                                            ? image.name.split('.').last.toLowerCase()
+                                            : 'jpg';
+                                        final fileName =
+                                            'foto_${DateTime.now().millisecondsSinceEpoch}.$ext';
+                                        await Supabase.instance.client.storage
+                                            .from('foto_barang')
+                                            .uploadBinary(
+                                              fileName,
+                                              bytes,
+                                              fileOptions: FileOptions(
+                                                contentType: 'image/$ext',
+                                                upsert: true,
+                                              ),
+                                            );
+                                        final publicUrl = Supabase
+                                            .instance.client.storage
+                                            .from('foto_barang')
+                                            .getPublicUrl(fileName);
+                                        fotoController.text = publicUrl;
+                                      } catch (e) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(SnackBar(
+                                            content: Text(
+                                                'Gagal upload foto: $e'),
+                                            backgroundColor: Colors.red,
+                                          ));
+                                        }
+                                      } finally {
+                                        dialogSetState(
+                                            () => isUploadingFoto = false);
+                                      }
+                                    },
+                                    icon: isUploadingFoto
+                                        ? const SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        : const Icon(
+                                            Icons.photo_library_outlined,
+                                            size: 16),
+                                    label: Text(
+                                        isUploadingFoto ? 'Uploading...' : 'Pilih'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF2A9D8F),
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(10)),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 14, vertical: 15),
+                                    ),
+                                  ),
+                                ],
+                              ),
                           if (!isWide) ...[
                             const SizedBox(height: 24),
                             _sectionLabel(
@@ -1816,13 +2258,44 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                 child: const Text('Batal'),
                               ),
                               const SizedBox(width: 12),
-                              ElevatedButton.icon(
+                               ElevatedButton.icon(
                                 onPressed: () async {
+                                   if (!isEditing && kodeController.text.trim().isNotEmpty) {
+                                     final val = kodeController.text.trim();
+                                     Item? foundItem;
+                                     Room? foundRoom;
+                                     for (var r in widget.allRooms) {
+                                       for (var i in r.items) {
+                                         if (i.kodeBarang.trim() == val) {
+                                           foundItem = i;
+                                           foundRoom = r;
+                                           break;
+                                         }
+                                       }
+                                       if (foundItem != null) break;
+                                     }
+                                     if (foundItem != null) {
+                                       final nonNullItem = foundItem;
+                                       dialogSetState(() {
+                                         matchedItem = nonNullItem;
+                                         matchedRoom = foundRoom;
+                                         jenisController.text = nonNullItem.jenisBarang;
+                                         merekController.text = nonNullItem.merekModel;
+                                         namaUserController.text = nonNullItem.namaPengguna;
+                                         nipUserController.text = nonNullItem.nipPengguna;
+                                         telpUserController.text = nonNullItem.teleponPengguna;
+                                         fotoController.text = nonNullItem.fotoUrl;
+                                       });
+                                     }
+                                   }
                                   if (formKey.currentState!.validate()) {
+                                    final bool isMoving = matchedItem != null;
                                     final newItem = Item(
-                                      id: isEditing
-                                          ? itemToEdit.id
-                                          : 'item-${DateTime.now().millisecondsSinceEpoch}',
+                                      id: isMoving
+                                          ? matchedItem!.id
+                                          : (isEditing
+                                              ? itemToEdit.id
+                                              : 'item-${DateTime.now().millisecondsSinceEpoch}'),
                                       jenisBarang: jenisController.text,
                                       merekModel: merekController.text,
                                       kodeBarang: kodeController.text,
@@ -1835,10 +2308,11 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
 
                                     if (isSupabaseConfigured) {
                                       try {
-                                        if (isEditing) {
+                                        if (isEditing || isMoving) {
                                           await Supabase.instance.client
                                               .from('items')
                                               .update({
+                                                'room_id': _room.id,
                                                 'jenis_barang': newItem.jenisBarang,
                                                 'merek_model': newItem.merekModel,
                                                 'kode_barang': newItem.kodeBarang,
@@ -1871,23 +2345,38 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                     }
 
                                     setState(() {
-                                      List<Item> updatedItems;
-                                      if (isEditing) {
-                                        updatedItems = _room.items
-                                            .map((i) => i.id == itemToEdit.id
-                                                ? newItem
-                                                : i)
-                                            .toList();
-                                      } else {
-                                        updatedItems = [
-                                          ..._room.items,
-                                          newItem
-                                        ];
-                                      }
-                                      _room =
-                                          _room.copyWith(items: updatedItems);
+                                      // Buat copy global dari list ruangan
+                                      final List<Room> updatedRooms = widget.allRooms.map((r) {
+                                        // 1. Jika ini adalah ruangan asal barang yang dipindah
+                                        if (isMoving && r.id == matchedRoom!.id) {
+                                          return r.copyWith(
+                                            items: r.items.where((i) => i.id != matchedItem!.id).toList(),
+                                          );
+                                        }
+                                        // 2. Jika ini adalah ruangan saat ini (tujuan)
+                                        if (r.id == _room.id) {
+                                          List<Item> newItemsList;
+                                          if (isEditing) {
+                                            newItemsList = r.items
+                                                .map((i) => i.id == itemToEdit.id ? newItem : i)
+                                                .toList();
+                                          } else {
+                                            // Jika dipindah, keluarkan dulu versi lamanya dari ruangan ini (antisipasi)
+                                            newItemsList = r.items.where((i) => i.id != newItem.id).toList();
+                                            newItemsList.add(newItem);
+                                          }
+                                          return r.copyWith(items: newItemsList);
+                                        }
+                                        return r;
+                                      }).toList();
+
+                                      // Perbarui state lokal _room agar UI detail ruangan ini langsung update
+                                      _room = updatedRooms.firstWhere((r) => r.id == _room.id);
+                                      
+                                      // Beritahu parent dashboard agar state global sinkron
+                                      widget.onRoomsChanged(updatedRooms);
                                     });
-                                    widget.onRoomUpdated(_room);
+
                                     Navigator.pop(context);
                                   }
                                 },
@@ -1980,10 +2469,12 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                 child: SingleChildScrollView(child: formContent),
               );
             },
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
+  },
+);
   }
 
   Widget _sectionLabel(String label, IconData icon, Color color) {
@@ -2018,8 +2509,17 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
     setState(() {
       final updated = _room.items.where((i) => i.id != item.id).toList();
       _room = _room.copyWith(items: updated);
+      
+      // Sinkronkan ke seluruh ruangan
+      final List<Room> updatedRooms = widget.allRooms.map((r) {
+        if (r.id == _room.id) {
+          return _room;
+        }
+        return r;
+      }).toList();
+      
+      widget.onRoomsChanged(updatedRooms);
     });
-    widget.onRoomUpdated(_room);
   }
 
   @override
@@ -2357,7 +2857,33 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                     tooltip: 'Edit Barang',
                                   ),
                                   IconButton(
-                                    onPressed: () => _deleteItem(item),
+                                    onPressed: () async {
+                                      final confirm = await showDialog<bool>(
+                                        context: context,
+                                        builder: (ctx) => AlertDialog(
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(16)),
+                                          title: const Text('Hapus Barang?',
+                                              style: TextStyle(fontWeight: FontWeight.bold)),
+                                          content: Text(
+                                              'Barang "${item.jenisBarang} - ${item.merekModel}" akan dihapus permanen dari sistem dan database. Yakin?'),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(ctx, false),
+                                              child: const Text('Batal'),
+                                            ),
+                                            ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.red,
+                                                  foregroundColor: Colors.white),
+                                              onPressed: () => Navigator.pop(ctx, true),
+                                              child: const Text('Hapus'),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                      if (confirm == true) _deleteItem(item);
+                                    },
                                     icon: const Icon(Icons.delete,
                                         color: Color(0xFFFFF0F0), size: 18),
                                     tooltip: 'Hapus Barang',
@@ -2558,12 +3084,32 @@ class PublicRoomScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 28),
-            const Text(
-              'Aset dalam Ruangan ini:',
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF111111)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Aset dalam Ruangan ini:',
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF111111)),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFC9E12C).withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${room.items.length} Barang',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF111111),
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
             Expanded(
@@ -2663,6 +3209,71 @@ class PublicItemScreen extends StatelessWidget {
     required this.onBack,
   }) : super(key: key);
 
+  Widget _buildZoomableCardDialog(BuildContext context) {
+    return Dialog.fullscreen(
+      backgroundColor: Colors.black.withOpacity(0.9),
+      child: Stack(
+        children: [
+          // Interactive Zoom Area
+          Center(
+            child: InteractiveViewer(
+              panEnabled: true,
+              scaleEnabled: true,
+              minScale: 1.0,
+              maxScale: 5.0,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: FittedBox(
+                  fit: BoxFit.contain,
+                  child: GensetCard(room: room, item: item),
+                ),
+              ),
+            ),
+          ),
+          // Controls overlay
+          Positioned(
+            top: 20,
+            left: 20,
+            right: 20,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.zoom_in, color: Colors.white, size: 16),
+                      SizedBox(width: 6),
+                      Text(
+                        'Cubit untuk zoom / Seret untuk geser',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                  onPressed: () => Navigator.pop(context),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.black.withOpacity(0.6),
+                    padding: const EdgeInsets.all(10),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -2676,60 +3287,344 @@ class PublicItemScreen extends StatelessWidget {
           onPressed: onBack,
         ),
       ),
+      body: InteractiveViewer(
+        panEnabled: true,
+        scaleEnabled: true,
+        minScale: 0.5,
+        maxScale: 5.0,
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Zoomable Template Card
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 24,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: GensetCard(room: room, item: item),
+                ),
+                const SizedBox(height: 24),
+
+                // Bottom info panel
+                Container(
+                  width: 720,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey[200]!),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Informasi Label QR & Barcode Fisik',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Kode Barang: ${item.kodeBarang}',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF4A4A4A),
+                                fontFamily: 'monospace',
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              'Informasi di atas merupakan data resmi Dinas Pemberdayaan Perempuan, Perlindungan Anak, Pengendalian Penduduk dan Keluarga Berencana Provinsi Sulawesi Selatan.',
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  color: Color(0xFF555555),
+                                  height: 1.4,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      QRCodeWidget(data: generateItemUrl(item.id), size: 70),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ----------------------------------------------------
+// 6. PUBLIC ITEM LIST VIEW SCREEN (For Scanned Duplicates)
+// ----------------------------------------------------
+class PublicItemListScreen extends StatelessWidget {
+  final String scannedCode;
+  final List<MapEntry<Item, Room>> matchedItems;
+  final VoidCallback onBack;
+  final ValueChanged<Item> onViewItem;
+
+  const PublicItemListScreen({
+    Key? key,
+    required this.scannedCode,
+    required this.matchedItems,
+    required this.onBack,
+    required this.onViewItem,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF9F9FB),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF111111),
+        foregroundColor: Colors.white,
+        title: const Text('Daftar Aset Terdeteksi'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: onBack,
+        ),
+      ),
       body: Center(
-        child: SingleChildScrollView(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 720),
           padding: const EdgeInsets.all(24.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Styled template card
-              GensetCard(room: room, item: item),
-              const SizedBox(height: 24),
-
-              // Bottom info panel
+              // Header Card showing scanned code info
               Container(
-                width: 720,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey[200]!),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                  border: Border.all(color: Colors.grey[100]!),
                 ),
                 child: Row(
                   children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFC9E12C).withOpacity(0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.qr_code_scanner_rounded,
+                        color: Color(0xFF111111),
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'Informasi Label QR & Barcode Fisik',
+                            'Hasil Pemindaian Kode',
                             style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF777777),
+                            ),
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 2),
                           Text(
-                            'Kode Barang: ${item.kodeBarang}',
+                            scannedCode,
                             style: const TextStyle(
-                                fontSize: 13,
-                                color: Color(0xFF4A4A4A),
-                                fontFamily: 'monospace',
-                                fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            'Informasi di atas merupakan data resmi Dinas Pemberdayaan Perempuan, Perlindungan Anak, Pengendalian Penduduk dan Keluarga Berencana Provinsi Sulawesi Selatan.',
-                            style: TextStyle(
-                                fontSize: 11,
-                                color: Color(0xFF555555),
-                                height: 1.4,
-                                fontWeight: FontWeight.w500),
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF111111),
+                              fontFamily: 'monospace',
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    QRCodeWidget(data: generateItemUrl(item.id), size: 70),
                   ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Pilih Aset untuk Dilihat:',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF111111),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2A9D8F).withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '${matchedItems.length} Duplikat',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2D6A4F),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              // List of items
+              Expanded(
+                child: ListView.builder(
+                  itemCount: matchedItems.length,
+                  itemBuilder: (context, index) {
+                    final item = matchedItems[index].key;
+                    final room = matchedItems[index].value;
+                    return Card(
+                      color: Colors.white,
+                      elevation: 0,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(color: Colors.grey[200]!),
+                      ),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () => onViewItem(item),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
+                            children: [
+                              // Image
+                              Container(
+                                width: 64,
+                                height: 64,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFC9E12C).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: item.fotoUrl.isNotEmpty
+                                      ? (item.fotoUrl.startsWith('http') ||
+                                              item.fotoUrl.startsWith('blob:') ||
+                                              item.fotoUrl.startsWith('data:'))
+                                          ? Image.network(
+                                              item.fotoUrl,
+                                              width: 64,
+                                              height: 64,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (context, error, stackTrace) =>
+                                                  const Icon(Icons.inventory_2,
+                                                      color: Color(0xFF111111), size: 28),
+                                            )
+                                          : Image.asset(
+                                              item.fotoUrl,
+                                              width: 64,
+                                              height: 64,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (context, error, stackTrace) =>
+                                                  const Icon(Icons.inventory_2,
+                                                      color: Color(0xFF111111), size: 28),
+                                            )
+                                      : const Icon(Icons.inventory_2,
+                                          color: Color(0xFF111111), size: 28),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              // Details
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item.jenisBarang,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF111111),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Merek/Model: ${item.merekModel}',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.grey[700],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.meeting_room_outlined,
+                                            size: 14, color: Colors.grey),
+                                        const SizedBox(width: 4),
+                                        Expanded(
+                                          child: Text(
+                                            'Ruangan: ${room.name}',
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    if (item.namaPengguna.isNotEmpty) ...[
+                                      const SizedBox(height: 4),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFE8776F).withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: Text(
+                                          'User: ${item.namaPengguna}',
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFFC04037),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Icon(Icons.arrow_forward_ios_rounded,
+                                  size: 16, color: Colors.grey),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ],
