@@ -27377,26 +27377,32 @@ s=window
 s.toString
 B.D2.a16(s,q,"label-ruang-"+r,"width=400,height=560")
 A.m8(B.pt,new A.aGl(q),t.H)},
-aQK(a){var s,r,q,p,o,n,m,l,k,j,i,h,g
-try{s=A.aNW(a,0)
+aQK(a){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e
+try{s=A.aNW(a,2)
 r=A.aNY(s)
 q=r.a
 p=150
 o=p/q
 n=new A.cK("")
-i=n
-h='<svg width="100%" height="100%" viewBox="0 0 '+A.k(p)+" "+A.k(p)+'" fill="none" xmlns="http://www.w3.org/2000/svg">'
-i.a+=h
-h=n
-i='<rect width="'+A.k(p)+'" height="'+A.k(p)+'" fill="white"/>'
-h.a+=i
+g=n
+f='<svg width="100%" height="100%" viewBox="0 0 '+A.k(p)+" "+A.k(p)+'" fill="none" xmlns="http://www.w3.org/2000/svg">'
+g.a+=f
+f=n
+g='<rect width="'+A.k(p)+'" height="'+A.k(p)+'" fill="white"/>'
+f.a+=g
 for(m=0;m<q;++m)for(l=0;l<q;++l)if(r.dP(l,m)){k=m*o
 j=l*o
-i=n
-h='<rect x="'+A.k(k)+'" y="'+A.k(j)+'" width="'+A.k(o)+'" height="'+A.k(o)+'" fill="#1565C0"/>'
-i.a+=h}n.a+="</svg>"
-i=n.a
-return i.charCodeAt(0)==0?i:i}catch(g){return'<svg width="75" height="75"><text x="5" y="40">Error QR</text></svg>'}},
+g=n
+f='<rect x="'+A.k(k)+'" y="'+A.k(j)+'" width="'+A.k(o)+'" height="'+A.k(o)+'" fill="#1565C0"/>'
+g.a+=f}i=p*0.28
+h=(p-i)/2
+g=n
+f='<rect x="'+A.k(h)+'" y="'+A.k(h)+'" width="'+A.k(i)+'" height="'+A.k(i)+'" fill="white" rx="4" ry="4"/>'
+g.a+=f
+n.a+='<image href="https://ariniarini2207-arch.github.io/webdp3a/assets/logo_sulsel.png" x="'+A.k(h+2)+'" y="'+A.k(h+2)+'" width="'+A.k(i-4)+'" height="'+A.k(i-4)+'" />'
+n.a+="</svg>"
+f=n.a
+return f.charCodeAt(0)==0?f:f}catch(e){return'<svg width="75" height="75"><text x="5" y="40">Error QR</text></svg>'}},
 aGk:function aGk(a){this.a=a},
 aGl:function aGl(a){this.a=a},
 rU:function rU(a){this.a=a},
