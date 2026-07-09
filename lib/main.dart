@@ -3281,11 +3281,8 @@ class PublicItemScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: const Color(0xFF111111),
         foregroundColor: Colors.white,
+        automaticallyImplyLeading: false,
         title: const Text('Detail Registrasi Aset'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: onBack,
-        ),
       ),
       body: InteractiveViewer(
         panEnabled: true,
