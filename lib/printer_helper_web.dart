@@ -198,6 +198,33 @@ Future<void> printItemLabelImpl(Item item, Room room) async {
   </div>
 
   <button class="print-btn" onclick="window.print(); setTimeout(()=>window.close(),800);">🖨️ Cetak</button>
+  <script>
+    // Load logo and overlay it on the QR code center
+    fetch('https://ariniarini2207-arch.github.io/webdp3a/assets/assets/logo_sulsel.png')
+      .then(r => r.blob())
+      .then(blob => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const logoPlaceholder = document.getElementById('qr-logo-overlay');
+          if (logoPlaceholder) {
+            const img = document.createElementNS('http://www.w3.org/2000/svg','image');
+            const svgEl = logoPlaceholder.closest('svg');
+            if (svgEl) {
+              const vb = svgEl.viewBox.baseVal;
+              const logoSize = vb.width * 0.28;
+              const logoOffset = (vb.width - logoSize) / 2;
+              img.setAttributeNS('http://www.w3.org/1999/xlink','href', e.target.result);
+              img.setAttribute('x', logoOffset + 2);
+              img.setAttribute('y', logoOffset + 2);
+              img.setAttribute('width', logoSize - 4);
+              img.setAttribute('height', logoSize - 4);
+              svgEl.appendChild(img);
+            }
+          }
+        };
+        reader.readAsDataURL(blob);
+      }).catch(() => {});
+  </script>
 </body>
 </html>''';
 
@@ -369,7 +396,7 @@ Future<void> printRoomLabelImpl(Room room) async {
 
     <div class="info-box">
       <div class="info-name">${room.name}</div>
-      <div class="info-code">${room.year} — ${room.barcode}</div>
+      <div class="info-code">${room.year} — ${room.barcode.replaceFirst('RM-', '')}</div>
     </div>
 
     <div class="footer-bar">
@@ -383,6 +410,33 @@ Future<void> printRoomLabelImpl(Room room) async {
   </div>
 
   <button class="print-btn" onclick="window.print(); setTimeout(()=>window.close(),800);">🖨️ Cetak</button>
+  <script>
+    // Load logo and overlay it on the QR code center
+    fetch('https://ariniarini2207-arch.github.io/webdp3a/assets/assets/logo_sulsel.png')
+      .then(r => r.blob())
+      .then(blob => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const logoPlaceholder = document.getElementById('qr-logo-overlay');
+          if (logoPlaceholder) {
+            const img = document.createElementNS('http://www.w3.org/2000/svg','image');
+            const svgEl = logoPlaceholder.closest('svg');
+            if (svgEl) {
+              const vb = svgEl.viewBox.baseVal;
+              const logoSize = vb.width * 0.28;
+              const logoOffset = (vb.width - logoSize) / 2;
+              img.setAttributeNS('http://www.w3.org/1999/xlink','href', e.target.result);
+              img.setAttribute('x', logoOffset + 2);
+              img.setAttribute('y', logoOffset + 2);
+              img.setAttribute('width', logoSize - 4);
+              img.setAttribute('height', logoSize - 4);
+              svgEl.appendChild(img);
+            }
+          }
+        };
+        reader.readAsDataURL(blob);
+      }).catch(() => {});
+  </script>
 </body>
 </html>''';
 
@@ -403,20 +457,14 @@ String _generateBarcodeSvg(String data) {
 }
 
 Future<String> _loadLogoBase64() async {
-  try {
-    final byteData = await rootBundle.load('assets/logo_sulsel.png');
-    final bytes = byteData.buffer.asUint8List();
-    return base64Encode(bytes);
-  } catch (e) {
-    return ''; // Return empty string if logo can't be loaded
-  }
+  return ''; // Placeholder - logo is now loaded via JS in print HTML
 }
 
 String _generateQrSvg(String data, String logoBase64) {
   try {
     final qrCode = QrCode.fromData(
       data: data,
-      errorCorrectLevel: QrErrorCorrectLevel.H, // High error correction for logo
+      errorCorrectLevel: QrErrorCorrectLevel.H,
     );
     final qrImage = QrImage(qrCode);
 
@@ -440,19 +488,11 @@ String _generateQrSvg(String data, String logoBase64) {
       }
     }
 
-    // Embed logo as Base64 directly in SVG so no CORS issues
-    if (logoBase64.isNotEmpty) {
-      final logoSize = size * 0.28;
-      final logoOffset = (size - logoSize) / 2;
-      // White background box for logo
-      sb.write(
-          '<rect x="$logoOffset" y="$logoOffset" width="$logoSize" height="$logoSize" fill="white" rx="4" ry="4"/>');
-      // Embed image as data URI - no external request needed
-      sb.write(
-          '<image href="data:image/png;base64,$logoBase64" '
-          'x="${logoOffset + 2}" y="${logoOffset + 2}" '
-          'width="${logoSize - 4}" height="${logoSize - 4}" />');
-    }
+    // White background box for logo center - logo inserted via JS
+    final logoSize = size * 0.28;
+    final logoOffset = (size - logoSize) / 2;
+    sb.write(
+        '<rect id="qr-logo-overlay" x="$logoOffset" y="$logoOffset" width="$logoSize" height="$logoSize" fill="white" rx="4" ry="4"/>');
 
     sb.write('</svg>');
     return sb.toString();
