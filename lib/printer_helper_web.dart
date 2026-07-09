@@ -402,7 +402,7 @@ String _generateQrSvg(String data) {
   try {
     final qrCode = QrCode.fromData(
       data: data,
-      errorCorrectLevel: QrErrorCorrectLevel.M,
+      errorCorrectLevel: QrErrorCorrectLevel.H, // High error correction for logo
     );
     final qrImage = QrImage(qrCode);
 
@@ -425,6 +425,21 @@ String _generateQrSvg(String data) {
         }
       }
     }
+    
+    // Add logo to the center
+    final logoSize = size * 0.28; // 28% of the QR code size
+    final logoOffset = (size - logoSize) / 2;
+    
+    // Draw a white background for the logo so it doesn't overlap dark squares
+    sb.write(
+        '<rect x="$logoOffset" y="$logoOffset" width="$logoSize" height="$logoSize" fill="white" rx="4" ry="4"/>');
+    
+    // Note: In Flutter Web, assets are served from /assets/
+    sb.write(
+        '<image href="https://ariniarini2207-arch.github.io/webdp3a/assets/logo_sulsel.png" '
+        'x="${logoOffset + 2}" y="${logoOffset + 2}" '
+        'width="${logoSize - 4}" height="${logoSize - 4}" />');
+
     sb.write('</svg>');
     return sb.toString();
   } catch (e) {
