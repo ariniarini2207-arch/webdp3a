@@ -3187,7 +3187,7 @@ class PublicRoomScreen extends StatelessWidget {
                             ),
                             subtitle: Text(
                               count > 1
-                                  ? '${item.merekModel} • Jumlah: $count'
+                                  ? '${item.merekModel} • ${item.kodeBarang} • Jumlah: $count'
                                   : '${item.merekModel} • ${item.kodeBarang}',
                               style: const TextStyle(fontSize: 12),
                             ),
