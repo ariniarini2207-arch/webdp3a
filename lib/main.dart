@@ -3036,6 +3036,14 @@ class PublicRoomScreen extends StatelessWidget {
       );
     }
 
+    // Group items by jenisBarang and merekModel (case-insensitive)
+    final Map<String, List<Item>> groupedMap = {};
+    for (final item in room.items) {
+      final key = '${item.jenisBarang.trim().toLowerCase()}|${item.merekModel.trim().toLowerCase()}';
+      groupedMap.putIfAbsent(key, () => []).add(item);
+    }
+    final groupedItems = groupedMap.values.toList();
+
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9FB),
       appBar: AppBar(
@@ -3122,9 +3130,11 @@ class PublicRoomScreen extends StatelessWidget {
                       ),
                     )
                   : ListView.builder(
-                      itemCount: room.items.length,
+                      itemCount: groupedItems.length,
                       itemBuilder: (context, index) {
-                        final item = room.items[index];
+                        final group = groupedItems[index];
+                        final item = group.first;
+                        final count = group.length;
                         return Card(
                           color: Colors.white,
                           elevation: 0,
@@ -3176,7 +3186,9 @@ class PublicRoomScreen extends StatelessWidget {
                                   color: Color(0xFF111111)),
                             ),
                             subtitle: Text(
-                              '${item.merekModel} • ${item.kodeBarang}',
+                              count > 1
+                                  ? '${item.merekModel} • Jumlah: $count'
+                                  : '${item.merekModel} • ${item.kodeBarang}',
                               style: const TextStyle(fontSize: 12),
                             ),
                             trailing: const Icon(Icons.chevron_right,
