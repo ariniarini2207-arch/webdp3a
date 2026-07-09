@@ -3299,18 +3299,22 @@ class PublicItemScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Zoomable Template Card
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
-                        blurRadius: 24,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
+                FittedBox(
+                  fit: BoxFit.contain,
+                  child: Container(
+                    width: 600, // Force internal rendering at full width
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.08),
+                          blurRadius: 24,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: GensetCard(room: room, item: item),
                   ),
-                  child: GensetCard(room: room, item: item),
                 ),
                 const SizedBox(height: 24),
 
