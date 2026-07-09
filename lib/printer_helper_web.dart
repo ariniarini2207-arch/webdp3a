@@ -1,14 +1,17 @@
 // ignore_for_file: avoid_web_libraries_in_flutter
 import 'dart:async';
+import 'dart:convert';
 import 'dart:html' as html;
 import 'package:barcode/barcode.dart';
+import 'package:flutter/services.dart';
 import 'package:qr/qr.dart';
 import 'models.dart';
 
-void printItemLabelImpl(Item item, Room room) {
+Future<void> printItemLabelImpl(Item item, Room room) async {
   final qrUrl =
       'https://ariniarini2207-arch.github.io/webdp3a/?item=${item.id}';
-  final qrSvg = _generateQrSvg(qrUrl);
+  final logoBase64 = await _loadLogoBase64();
+  final qrSvg = _generateQrSvg(qrUrl, logoBase64);
 
   final htmlContent = '''<!DOCTYPE html>
 <html>
@@ -205,10 +208,11 @@ void printItemLabelImpl(Item item, Room room) {
       const Duration(seconds: 60), () => html.Url.revokeObjectUrl(url));
 }
 
-void printRoomLabelImpl(Room room) {
+Future<void> printRoomLabelImpl(Room room) async {
   final qrUrl =
       'https://ariniarini2207-arch.github.io/webdp3a/?room=${room.id}';
-  final qrSvg = _generateQrSvg(qrUrl);
+  final logoBase64 = await _loadLogoBase64();
+  final qrSvg = _generateQrSvg(qrUrl, logoBase64);
 
   final htmlContent = '''<!DOCTYPE html>
 <html>
@@ -398,7 +402,17 @@ String _generateBarcodeSvg(String data) {
   }
 }
 
-String _generateQrSvg(String data) {
+Future<String> _loadLogoBase64() async {
+  try {
+    final byteData = await rootBundle.load('assets/logo_sulsel.png');
+    final bytes = byteData.buffer.asUint8List();
+    return base64Encode(bytes);
+  } catch (e) {
+    return ''; // Return empty string if logo can't be loaded
+  }
+}
+
+String _generateQrSvg(String data, String logoBase64) {
   try {
     final qrCode = QrCode.fromData(
       data: data,
@@ -425,20 +439,20 @@ String _generateQrSvg(String data) {
         }
       }
     }
-    
-    // Add logo to the center
-    final logoSize = size * 0.28; // 28% of the QR code size
-    final logoOffset = (size - logoSize) / 2;
-    
-    // Draw a white background for the logo so it doesn't overlap dark squares
-    sb.write(
-        '<rect x="$logoOffset" y="$logoOffset" width="$logoSize" height="$logoSize" fill="white" rx="4" ry="4"/>');
-    
-    // Note: In Flutter Web, assets are served from /assets/
-    sb.write(
-        '<image href="https://ariniarini2207-arch.github.io/webdp3a/assets/logo_sulsel.png" '
-        'x="${logoOffset + 2}" y="${logoOffset + 2}" '
-        'width="${logoSize - 4}" height="${logoSize - 4}" />');
+
+    // Embed logo as Base64 directly in SVG so no CORS issues
+    if (logoBase64.isNotEmpty) {
+      final logoSize = size * 0.28;
+      final logoOffset = (size - logoSize) / 2;
+      // White background box for logo
+      sb.write(
+          '<rect x="$logoOffset" y="$logoOffset" width="$logoSize" height="$logoSize" fill="white" rx="4" ry="4"/>');
+      // Embed image as data URI - no external request needed
+      sb.write(
+          '<image href="data:image/png;base64,$logoBase64" '
+          'x="${logoOffset + 2}" y="${logoOffset + 2}" '
+          'width="${logoSize - 4}" height="${logoSize - 4}" />');
+    }
 
     sb.write('</svg>');
     return sb.toString();

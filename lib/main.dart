@@ -2603,7 +2603,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                 ),
                 const SizedBox(height: 8),
                 TextButton.icon(
-                  onPressed: () => printRoomLabelImpl(_room),
+                  onPressed: () async => await printRoomLabelImpl(_room),
                   icon: const Icon(Icons.print, size: 14, color: Color(0xFFE8776F)),
                   label: const Text(
                     'Cetak Label Ruangan',
@@ -2787,7 +2787,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                         ),
                         const SizedBox(height: 6),
                         TextButton.icon(
-                          onPressed: () => printItemLabelImpl(item, _room),
+                          onPressed: () async => await printItemLabelImpl(item, _room),
                           icon: const Icon(Icons.print, size: 14,
                               color: Color(0xFF2A9D8F)),
                           label: const Text(

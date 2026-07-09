@@ -1,9 +1,9 @@
 import 'models.dart';
 
-void printItemLabelImpl(Item item, Room room) {
+Future<void> printItemLabelImpl(Item item, Room room) async {
   // No-op untuk platform non-web
 }
 
-void printRoomLabelImpl(Room room) {
+Future<void> printRoomLabelImpl(Room room) async {
   // No-op untuk platform non-web
 }
