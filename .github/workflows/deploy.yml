@@ -19,7 +19,7 @@ jobs:
           channel: 'stable'
 
       - run: flutter pub get
-      - run: flutter build web --base-href "/webdp3a/"
+      - run: flutter build web --web-renderer canvaskit --base-href "/webdp3a/"
 
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
