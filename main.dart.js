@@ -94928,7 +94928,9 @@ else p=B.lL
 r=A.bJ(o,A.Am(q,p),B.m,o,o,new A.bB(s,o,o,r,o,o,B.D),40,o,o,40)
 s=A.bg(l.b,o,o,o,B.a2d,o,o)
 q=l.c
-return A.aHm(new A.PK(r,s,A.bg(k>1?q+" \u2022 Jumlah: "+k:q+" \u2022 "+l.d,o,o,o,B.a2w,o,o),B.Kt,new A.aks(this.a,l),o),B.h,0,B.pv,new A.cj(m,new A.b3(B.e3,1,B.w,-1)))},
+p=l.d
+q+=" \u2022 "
+return A.aHm(new A.PK(r,s,A.bg(k>1?q+p+" \u2022 Jumlah: "+k:q+p,o,o,o,B.a2w,o,o),B.Kt,new A.aks(this.a,l),o),B.h,0,B.pv,new A.cj(m,new A.b3(B.e3,1,B.w,-1)))},
 $S:122}
 A.akq.prototype={
 $3(a,b,c){return B.lL},
