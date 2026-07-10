@@ -214,8 +214,8 @@ Future<void> printItemLabelImpl(Item item, Room room) async {
   <script>
     const baseUrl = 'https://gensetarch.github.io/webdp3a/assets/assets';
 
-    // Load logo_sulsel once — use for both QR center and corner
-    fetch(baseUrl + '/logo_sulsel.png')
+    // Load logo_sulsel once — use for both QR center and corner (bypass cache using timestamp)
+    fetch(baseUrl + '/logo_sulsel.png?t=' + new Date().getTime())
       .then(r => r.blob())
       .then(blob => {
         const reader = new FileReader();
@@ -448,8 +448,8 @@ Future<void> printRoomLabelImpl(Room room) async {
   <script>
     const baseUrl = 'https://gensetarch.github.io/webdp3a/assets/assets';
 
-    // Load logo_sulsel once — use for both QR center and corner
-    fetch(baseUrl + '/logo_sulsel.png')
+    // Load logo_sulsel once — use for both QR center and corner (bypass cache using timestamp)
+    fetch(baseUrl + '/logo_sulsel.png?t=' + new Date().getTime())
       .then(r => r.blob())
       .then(blob => {
         const reader = new FileReader();
