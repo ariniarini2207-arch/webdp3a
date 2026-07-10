@@ -12,7 +12,7 @@ class GensetCard extends StatelessWidget {
     Key? key,
     required this.room,
     required this.item,
-    this.logoUrl = 'assets/logo_sulsel.png',
+    this.logoUrl = 'assets/logo_sulsel_original.png',
   }) : super(key: key);
 
   @override
@@ -403,7 +403,7 @@ class GensetCard extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       alignment: Alignment.center,
       child: Image.asset(
-        'assets/logo_sulsel.png',
+        'assets/logo_sulsel_original.png',
         fit: BoxFit.contain,
       ),
     );

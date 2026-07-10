@@ -653,7 +653,7 @@ class _LoginScreenState extends State<LoginScreen>
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: Image.asset('assets/logo_sulsel.png',
+                  child: Image.asset('assets/logo_sulsel_original.png',
                       fit: BoxFit.contain),
                 ),
               ),
@@ -760,7 +760,7 @@ class _LoginScreenState extends State<LoginScreen>
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: Image.asset('assets/logo_sulsel.png',
+                      child: Image.asset('assets/logo_sulsel_original.png',
                           fit: BoxFit.contain),
                     ),
                   ),

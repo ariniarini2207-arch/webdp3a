@@ -227,7 +227,7 @@ Future<void> printItemLabelImpl(Item item, Room room) async {
       }).catch(() => {});
 
     // Load original logo_sulsel into QR center (bypass cache)
-    fetch(baseUrl + '/logo_sulsel.png?t=' + new Date().getTime())
+    fetch(baseUrl + '/logo_sulsel_original.png?t=' + new Date().getTime())
       .then(r => r.blob())
       .then(blob => {
         const reader = new FileReader();
@@ -466,7 +466,7 @@ Future<void> printRoomLabelImpl(Room room) async {
       }).catch(() => {});
 
     // Load original logo_sulsel into QR center (bypass cache)
-    fetch(baseUrl + '/logo_sulsel.png?t=' + new Date().getTime())
+    fetch(baseUrl + '/logo_sulsel_original.png?t=' + new Date().getTime())
       .then(r => r.blob())
       .then(blob => {
         const reader = new FileReader();
