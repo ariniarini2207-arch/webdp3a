@@ -149,14 +149,20 @@ Future<void> printItemLabelImpl(Item item, Room room) async {
       text-transform: uppercase;
     }
 
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 2px 14px 0 14px;
+      gap: 8px;
+    }
+
     .corner-logo {
-      position: absolute;
-      top: 36px;
-      left: 12px;
-      width: 1.1cm;
-      height: 1.1cm;
+      width: 0.9cm;
+      height: 0.9cm;
       object-fit: contain;
-      z-index: 10;
+      flex-shrink: 0;
       filter: drop-shadow(0 1px 3px rgba(0,0,0,0.3));
     }
 
@@ -179,16 +185,16 @@ Future<void> printItemLabelImpl(Item item, Room room) async {
 </head>
 <body>
   <div class="card">
-    <!-- Corner Logo DP3A -->
-    <img id="corner-logo-img" class="corner-logo" alt="Logo DP3A" />
-
     <!-- Zigzag Top -->
     <svg class="zigzag-top" viewBox="0 0 360 28" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
       <polygon points="0,0 360,0 360,28 330,10 300,28 270,10 240,28 210,10 180,28 150,10 120,28 90,10 60,28 30,10 0,28" fill="rgba(255,255,255,0.15)"/>
       <polygon points="0,0 360,0 360,20 345,6 315,22 285,6 255,22 225,6 195,22 165,6 135,22 105,6 75,22 45,6 15,22 0,8" fill="rgba(255,255,255,0.10)"/>
     </svg>
 
-    <div class="title">SCAN BANDA</div>
+    <div class="header-row">
+      <img id="corner-logo-img" class="corner-logo" alt="Logo DP3A" />
+      <div class="title">SCAN BANDA</div>
+    </div>
 
     <div class="qr-wrapper">
       $qrSvg
@@ -196,7 +202,7 @@ Future<void> printItemLabelImpl(Item item, Room room) async {
 
     <div class="info-box">
       <div class="info-name">${item.jenisBarang}</div>
-      <div class="info-code">${item.kodeBarang}</div>
+      <div class="info-code">${item.kodeBarang.replaceAll('-', ' ')}</div>
     </div>
 
     <div class="footer-bar">
@@ -390,14 +396,20 @@ Future<void> printRoomLabelImpl(Room room) async {
       text-transform: uppercase;
     }
 
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 2px 14px 0 14px;
+      gap: 8px;
+    }
+
     .corner-logo {
-      position: absolute;
-      top: 36px;
-      left: 12px;
-      width: 1.1cm;
-      height: 1.1cm;
+      width: 0.9cm;
+      height: 0.9cm;
       object-fit: contain;
-      z-index: 10;
+      flex-shrink: 0;
       filter: drop-shadow(0 1px 3px rgba(0,0,0,0.3));
     }
 
@@ -420,15 +432,15 @@ Future<void> printRoomLabelImpl(Room room) async {
 </head>
 <body>
   <div class="card">
-    <!-- Corner Logo DP3A -->
-    <img id="corner-logo-img" class="corner-logo" alt="Logo DP3A" />
-
     <svg class="zigzag-top" viewBox="0 0 360 28" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
       <polygon points="0,0 360,0 360,28 330,10 300,28 270,10 240,28 210,10 180,28 150,10 120,28 90,10 60,28 30,10 0,28" fill="rgba(255,255,255,0.15)"/>
       <polygon points="0,0 360,0 360,20 345,6 315,22 285,6 255,22 225,6 195,22 165,6 135,22 105,6 75,22 45,6 15,22 0,8" fill="rgba(255,255,255,0.10)"/>
     </svg>
 
-    <div class="title">SCAN BANDA</div>
+    <div class="header-row">
+      <img id="corner-logo-img" class="corner-logo" alt="Logo DP3A" />
+      <div class="title">SCAN BANDA</div>
+    </div>
 
     <div class="qr-wrapper">
       $qrSvg
@@ -436,7 +448,7 @@ Future<void> printRoomLabelImpl(Room room) async {
 
     <div class="info-box">
       <div class="info-name">${room.name}</div>
-      <div class="info-code">${room.year} — ${room.barcode.replaceFirst('RM-', '')}</div>
+      <div class="info-code">${room.year} — ${room.barcode.replaceFirst('RM-', '').replaceAll('-', ' ')}</div>
     </div>
 
     <div class="footer-bar">
