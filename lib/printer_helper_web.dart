@@ -149,20 +149,14 @@ Future<void> printItemLabelImpl(Item item, Room room) async {
       text-transform: uppercase;
     }
 
-    .header-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      padding: 2px 14px 0 14px;
-      gap: 8px;
-    }
-
     .corner-logo {
-      width: 0.9cm;
-      height: 0.9cm;
+      position: absolute;
+      top: 32px;
+      left: 10px;
+      width: 0.85cm;
+      height: 0.85cm;
       object-fit: contain;
-      flex-shrink: 0;
+      z-index: 10;
       filter: drop-shadow(0 1px 3px rgba(0,0,0,0.3));
     }
 
@@ -185,16 +179,16 @@ Future<void> printItemLabelImpl(Item item, Room room) async {
 </head>
 <body>
   <div class="card">
+    <!-- Logo Sulsel top-left corner -->
+    <img id="corner-logo-img" class="corner-logo" alt="Logo Sulsel" />
+
     <!-- Zigzag Top -->
     <svg class="zigzag-top" viewBox="0 0 360 28" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
       <polygon points="0,0 360,0 360,28 330,10 300,28 270,10 240,28 210,10 180,28 150,10 120,28 90,10 60,28 30,10 0,28" fill="rgba(255,255,255,0.15)"/>
       <polygon points="0,0 360,0 360,20 345,6 315,22 285,6 255,22 225,6 195,22 165,6 135,22 105,6 75,22 45,6 15,22 0,8" fill="rgba(255,255,255,0.10)"/>
     </svg>
 
-    <div class="header-row">
-      <img id="corner-logo-img" class="corner-logo" alt="Logo DP3A" />
-      <div class="title">SCAN BANDA</div>
-    </div>
+    <div class="title">SCAN BANDA</div>
 
     <div class="qr-wrapper">
       $qrSvg
@@ -220,12 +214,19 @@ Future<void> printItemLabelImpl(Item item, Room room) async {
   <script>
     const baseUrl = 'https://gensetarch.github.io/webdp3a/assets/assets';
 
-    // Load logo_sulsel into QR center
+    // Load logo_sulsel once — use for both QR center and corner
     fetch(baseUrl + '/logo_sulsel.png')
       .then(r => r.blob())
       .then(blob => {
         const reader = new FileReader();
         reader.onload = function(e) {
+          const dataUrl = e.target.result;
+
+          // Set corner logo
+          const cornerImg = document.getElementById('corner-logo-img');
+          if (cornerImg) cornerImg.src = dataUrl;
+
+          // Set QR center logo
           const logoPlaceholder = document.getElementById('qr-logo-overlay');
           if (logoPlaceholder) {
             const img = document.createElementNS('http://www.w3.org/2000/svg','image');
@@ -234,7 +235,7 @@ Future<void> printItemLabelImpl(Item item, Room room) async {
               const vb = svgEl.viewBox.baseVal;
               const logoSize = vb.width * 0.28;
               const logoOffset = (vb.width - logoSize) / 2;
-              img.setAttributeNS('http://www.w3.org/1999/xlink','href', e.target.result);
+              img.setAttributeNS('http://www.w3.org/1999/xlink','href', dataUrl);
               img.setAttribute('x', logoOffset + 2);
               img.setAttribute('y', logoOffset + 2);
               img.setAttribute('width', logoSize - 4);
@@ -242,18 +243,6 @@ Future<void> printItemLabelImpl(Item item, Room room) async {
               svgEl.appendChild(img);
             }
           }
-        };
-        reader.readAsDataURL(blob);
-      }).catch(() => {});
-
-    // Load logo_dp3a into top-left corner
-    fetch(baseUrl + '/logo_dp3a.png')
-      .then(r => r.blob())
-      .then(blob => {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const cornerImg = document.getElementById('corner-logo-img');
-          if (cornerImg) cornerImg.src = e.target.result;
         };
         reader.readAsDataURL(blob);
       }).catch(() => {});
@@ -396,20 +385,14 @@ Future<void> printRoomLabelImpl(Room room) async {
       text-transform: uppercase;
     }
 
-    .header-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      padding: 2px 14px 0 14px;
-      gap: 8px;
-    }
-
     .corner-logo {
-      width: 0.9cm;
-      height: 0.9cm;
+      position: absolute;
+      top: 32px;
+      left: 10px;
+      width: 0.85cm;
+      height: 0.85cm;
       object-fit: contain;
-      flex-shrink: 0;
+      z-index: 10;
       filter: drop-shadow(0 1px 3px rgba(0,0,0,0.3));
     }
 
@@ -432,15 +415,15 @@ Future<void> printRoomLabelImpl(Room room) async {
 </head>
 <body>
   <div class="card">
+    <!-- Logo Sulsel top-left corner -->
+    <img id="corner-logo-img" class="corner-logo" alt="Logo Sulsel" />
+
     <svg class="zigzag-top" viewBox="0 0 360 28" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
       <polygon points="0,0 360,0 360,28 330,10 300,28 270,10 240,28 210,10 180,28 150,10 120,28 90,10 60,28 30,10 0,28" fill="rgba(255,255,255,0.15)"/>
       <polygon points="0,0 360,0 360,20 345,6 315,22 285,6 255,22 225,6 195,22 165,6 135,22 105,6 75,22 45,6 15,22 0,8" fill="rgba(255,255,255,0.10)"/>
     </svg>
 
-    <div class="header-row">
-      <img id="corner-logo-img" class="corner-logo" alt="Logo DP3A" />
-      <div class="title">SCAN BANDA</div>
-    </div>
+    <div class="title">SCAN BANDA</div>
 
     <div class="qr-wrapper">
       $qrSvg
@@ -465,12 +448,19 @@ Future<void> printRoomLabelImpl(Room room) async {
   <script>
     const baseUrl = 'https://gensetarch.github.io/webdp3a/assets/assets';
 
-    // Load logo_sulsel into QR center
+    // Load logo_sulsel once — use for both QR center and corner
     fetch(baseUrl + '/logo_sulsel.png')
       .then(r => r.blob())
       .then(blob => {
         const reader = new FileReader();
         reader.onload = function(e) {
+          const dataUrl = e.target.result;
+
+          // Set corner logo
+          const cornerImg = document.getElementById('corner-logo-img');
+          if (cornerImg) cornerImg.src = dataUrl;
+
+          // Set QR center logo
           const logoPlaceholder = document.getElementById('qr-logo-overlay');
           if (logoPlaceholder) {
             const img = document.createElementNS('http://www.w3.org/2000/svg','image');
@@ -479,7 +469,7 @@ Future<void> printRoomLabelImpl(Room room) async {
               const vb = svgEl.viewBox.baseVal;
               const logoSize = vb.width * 0.28;
               const logoOffset = (vb.width - logoSize) / 2;
-              img.setAttributeNS('http://www.w3.org/1999/xlink','href', e.target.result);
+              img.setAttributeNS('http://www.w3.org/1999/xlink','href', dataUrl);
               img.setAttribute('x', logoOffset + 2);
               img.setAttribute('y', logoOffset + 2);
               img.setAttribute('width', logoSize - 4);
@@ -487,18 +477,6 @@ Future<void> printRoomLabelImpl(Room room) async {
               svgEl.appendChild(img);
             }
           }
-        };
-        reader.readAsDataURL(blob);
-      }).catch(() => {});
-
-    // Load logo_dp3a into top-left corner
-    fetch(baseUrl + '/logo_dp3a.png')
-      .then(r => r.blob())
-      .then(blob => {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const cornerImg = document.getElementById('corner-logo-img');
-          if (cornerImg) cornerImg.src = e.target.result;
         };
         reader.readAsDataURL(blob);
       }).catch(() => {});
