@@ -1401,15 +1401,15 @@ class DashboardScreen extends StatelessWidget {
                                       style: TextStyle(
                                           fontSize: 22,
                                           fontWeight: FontWeight.w900,
-                                          color: Color(0xFF2C3E50)),
+                                          color: Colors.black),
                                     ),
                                   ],
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   'Total ruangan: ${rooms.length}',
-                                  style: TextStyle(
-                                      color: Colors.grey[700],
+                                  style: const TextStyle(
+                                      color: Colors.black87,
                                       fontWeight: FontWeight.w600,
                                       fontSize: 13),
                                 ),
@@ -1445,7 +1445,7 @@ class DashboardScreen extends StatelessWidget {
                                     style: TextStyle(
                                         fontSize: 22,
                                         fontWeight: FontWeight.w900,
-                                        color: Color(0xFF2C3E50)),
+                                        color: Colors.black),
                                   ),
                                 ),
                               ],
@@ -1453,8 +1453,8 @@ class DashboardScreen extends StatelessWidget {
                             const SizedBox(height: 4),
                             Text(
                               'Total ruangan: ${rooms.length}',
-                              style: TextStyle(
-                                  color: Colors.grey[700],
+                              style: const TextStyle(
+                                  color: Colors.black87,
                                   fontWeight: FontWeight.w600,
                                   fontSize: 13),
                             ),
@@ -2732,7 +2732,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                             style: TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.w900,
-                                color: Color(0xFF2C3E50)),
+                                color: Colors.black),
                           ),
                         ),
                       ],
@@ -2740,8 +2740,8 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                     const SizedBox(height: 4),
                     Text(
                       'Menampilkan ${_room.items.length} barang terdaftar',
-                      style: TextStyle(
-                          color: Colors.grey[700],
+                      style: const TextStyle(
+                          color: Colors.black87,
                           fontSize: 13,
                           fontWeight: FontWeight.w600),
                     ),
