@@ -599,174 +599,193 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // ── Wide layout: sidebar kiri navy + form kanan, full screen ──
+  // ── Wide layout: sidebar kiri navy + form kanan, RESPONSIF seperti dashboard ──
   Widget _buildWideLayout() {
-    return FadeTransition(
-      opacity: _fadeAnim,
-      child: SlideTransition(
-        position: _slideAnim,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // ── Panel Kiri: Informasi Dinas (sidebar) ──
-            Container(
-              width: 360,
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 60),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF1A2F5A), Color(0xFF1E3A6E)],
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Logo Sulsel
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.25),
-                          blurRadius: 16,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(18),
-                      child: Image.asset('assets/logo_sulsel_original.png',
-                          fit: BoxFit.contain),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Lebar sidebar proporsional: 30% layar, min 260, max 380
+        final sidebarWidth =
+            (constraints.maxWidth * 0.30).clamp(260.0, 380.0);
+        final isCompact = constraints.maxWidth < 1100;
+
+        return FadeTransition(
+          opacity: _fadeAnim,
+          child: SlideTransition(
+            position: _slideAnim,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // ── Panel Kiri: Informasi Dinas (sidebar) ──
+                Container(
+                  width: sidebarWidth,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isCompact ? 28 : 40,
+                    vertical: isCompact ? 40 : 60,
+                  ),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF1A2F5A), Color(0xFF1E3A6E)],
                     ),
                   ),
-                  const SizedBox(height: 36),
-                  // Gold accent
-                  Container(
-                    height: 4,
-                    width: 52,
-                    decoration: BoxDecoration(
-                      color: _gold,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Sistem Informasi\nManajemen Aset',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                      height: 1.25,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    'Dinas Pemberdayaan Perempuan,\nPerlindungan Anak, Pengendalian\nPenduduk dan Keluarga Berencana',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white.withOpacity(0.72),
-                      height: 1.65,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Provinsi Sulawesi Selatan',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white.withOpacity(0.5),
-                    ),
-                  ),
-                  const SizedBox(height: 48),
-                  // GENSET Badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: _gold.withOpacity(0.45),
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.inventory_2_outlined,
-                            color: _goldLight, size: 18),
-                        const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'GENSET',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w800,
-                                color: _goldLight,
-                                letterSpacing: 1,
-                              ),
-                            ),
-                            Text(
-                              'Gerakan Sayang Aset',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w400,
-                                color: _gold.withOpacity(0.85),
-                              ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Logo Sulsel
+                      Container(
+                        width: isCompact ? 64 : 80,
+                        height: isCompact ? 64 : 80,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius:
+                              BorderRadius.circular(isCompact ? 14 : 18),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.25),
+                              blurRadius: 16,
+                              offset: const Offset(0, 6),
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    'Sistem pencatatan dan pengelolaan\naset inventaris kantor secara digital,\nterintegrasi dan akuntabel.',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white.withOpacity(0.55),
-                      height: 1.65,
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    '© ${DateTime.now().year} Dinas P3AKB\nProvinsi Sulawesi Selatan',
-                    style: TextStyle(
-                      fontSize: 10.5,
-                      color: Colors.white.withOpacity(0.35),
-                      height: 1.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // ── Panel Kanan: Form Login terpusat ──
-            Expanded(
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 60, vertical: 48),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 400),
-                    child: _buildLoginCard(),
+                        child: ClipRRect(
+                          borderRadius:
+                              BorderRadius.circular(isCompact ? 14 : 18),
+                          child: Image.asset('assets/logo_sulsel_original.png',
+                              fit: BoxFit.contain),
+                        ),
+                      ),
+                      SizedBox(height: isCompact ? 24 : 36),
+                      // Gold accent
+                      Container(
+                        height: 4,
+                        width: 48,
+                        decoration: BoxDecoration(
+                          color: _gold,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      SizedBox(height: isCompact ? 14 : 20),
+                      Text(
+                        'Sistem Informasi\nManajemen Aset',
+                        style: TextStyle(
+                          fontSize: isCompact ? 22 : 28,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          height: 1.25,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      SizedBox(height: isCompact ? 10 : 14),
+                      Text(
+                        'Dinas Pemberdayaan Perempuan,\nPerlindungan Anak, Pengendalian\nPenduduk dan Keluarga Berencana',
+                        style: TextStyle(
+                          fontSize: isCompact ? 11.5 : 13,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white.withOpacity(0.72),
+                          height: 1.65,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Provinsi Sulawesi Selatan',
+                        style: TextStyle(
+                          fontSize: isCompact ? 11 : 12,
+                          color: Colors.white.withOpacity(0.5),
+                        ),
+                      ),
+                      SizedBox(height: isCompact ? 28 : 48),
+                      // GENSET Badge
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isCompact ? 12 : 14,
+                          vertical: isCompact ? 10 : 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: _gold.withOpacity(0.45),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.inventory_2_outlined,
+                                color: _goldLight, size: isCompact ? 16 : 18),
+                            const SizedBox(width: 10),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'GENSET',
+                                  style: TextStyle(
+                                    fontSize: isCompact ? 12 : 13,
+                                    fontWeight: FontWeight.w800,
+                                    color: _goldLight,
+                                    letterSpacing: 1,
+                                  ),
+                                ),
+                                Text(
+                                  'Gerakan Sayang Aset',
+                                  style: TextStyle(
+                                    fontSize: isCompact ? 10 : 11,
+                                    fontWeight: FontWeight.w400,
+                                    color: _gold.withOpacity(0.85),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: isCompact ? 14 : 20),
+                      Text(
+                        'Sistem pencatatan dan pengelolaan\naset inventaris kantor secara\ndigital, terintegrasi dan akuntabel.',
+                        style: TextStyle(
+                          fontSize: isCompact ? 11 : 12,
+                          color: Colors.white.withOpacity(0.55),
+                          height: 1.65,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        '© ${DateTime.now().year} Dinas P3AKB\nProvinsi Sulawesi Selatan',
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          color: Colors.white.withOpacity(0.35),
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
+
+                // ── Panel Kanan: Form Login terpusat ──
+                Expanded(
+                  child: Center(
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isCompact ? 32 : 60,
+                        vertical: 48,
+                      ),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 400),
+                        child: _buildLoginCard(),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
+
 
   // ── Narrow layout: scrollable, terpusat ──
   Widget _buildNarrowScrollable() {
