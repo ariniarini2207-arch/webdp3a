@@ -1095,7 +1095,7 @@ class _LoginScreenState extends State<LoginScreen>
 // ----------------------------------------------------
 // 2. DASHBOARD / ROOMS LIST SCREEN
 // ----------------------------------------------------
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   final List<Room> rooms;
   final VoidCallback onLogout;
   final ValueChanged<List<Room>> onRoomsChanged;
@@ -1110,6 +1110,55 @@ class DashboardScreen extends StatelessWidget {
     required this.onScanPressed,
     required this.onHostOverrideChanged,
   }) : super(key: key);
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  List<Room> get rooms => widget.rooms;
+  VoidCallback get onLogout => widget.onLogout;
+  ValueChanged<List<Room>> get onRoomsChanged => widget.onRoomsChanged;
+  VoidCallback get onScanPressed => widget.onScanPressed;
+  VoidCallback get onHostOverrideChanged => widget.onHostOverrideChanged;
+
+  void _showLogoutConfirmation() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: const Text(
+          'Keluar Dashboard?',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          'Apakah Anda yakin ingin keluar dari panel admin dan kembali ke halaman login?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Keluar'),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true && mounted) {
+      onLogout();
+    }
+  }
 
   void _showAddRoomDialog(BuildContext context) {
     final nameController = TextEditingController();
@@ -1331,43 +1380,7 @@ class DashboardScreen extends StatelessWidget {
             tooltip: 'Pindai Barcode Aset',
           ),
           IconButton(
-            onPressed: () async {
-              final confirm = await showDialog<bool>(
-                context: context,
-                builder: (context) => AlertDialog(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  title: const Text(
-                    'Keluar Dashboard?',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  content: const Text(
-                    'Apakah Anda yakin ingin keluar dari panel admin?',
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: const Text('Batal'),
-                    ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      onPressed: () => Navigator.pop(context, true),
-                      child: const Text('Keluar'),
-                    ),
-                  ],
-                ),
-              );
-              if (confirm == true) {
-                onLogout();
-              }
-            },
+            onPressed: _showLogoutConfirmation,
             icon: const Icon(Icons.logout),
             tooltip: 'Logout Admin',
           ),
