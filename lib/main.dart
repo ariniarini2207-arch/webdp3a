@@ -1331,7 +1331,43 @@ class DashboardScreen extends StatelessWidget {
             tooltip: 'Pindai Barcode Aset',
           ),
           IconButton(
-            onPressed: onLogout,
+            onPressed: () async {
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  title: const Text(
+                    'Keluar Dashboard?',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  content: const Text(
+                    'Apakah Anda yakin ingin keluar dari panel admin?',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('Batal'),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text('Keluar'),
+                    ),
+                  ],
+                ),
+              );
+              if (confirm == true) {
+                onLogout();
+              }
+            },
             icon: const Icon(Icons.logout),
             tooltip: 'Logout Admin',
           ),
@@ -2349,22 +2385,25 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                      }
                                    }
                                   if (formKey.currentState!.validate()) {
-                                    final bool isMoving = matchedItem != null;
+                                    final bool isMoving = !isEditing && matchedItem != null;
                                     final newItem = Item(
-                                      id: isMoving
-                                          ? matchedItem!.id
-                                          : (isEditing
-                                              ? itemToEdit.id
+                                      id: isEditing
+                                          ? itemToEdit.id
+                                          : (isMoving
+                                              ? matchedItem!.id
                                               : 'item-${DateTime.now().millisecondsSinceEpoch}'),
                                       jenisBarang: jenisController.text,
                                       merekModel: merekController.text,
+                                      barcode: kodeController.text, // auto-generated from kodeBarang
                                       kodeBarang: kodeController.text,
                                       namaPengguna: namaUserController.text,
                                       nipPengguna: nipUserController.text,
                                       teleponPengguna: telpUserController.text,
                                       fotoUrl: fotoController.text,
-                                      barcode: kodeController.text,
                                     );
+
+                                    bool saveSuccess = true;
+                                    String? dbError;
 
                                     if (isSupabaseConfigured) {
                                       try {
@@ -2400,44 +2439,60 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                               });
                                         }
                                       } catch (e) {
+                                        saveSuccess = false;
+                                        dbError = e.toString();
                                         debugPrint('Supabase Item Add/Edit Error: $e');
                                       }
                                     }
 
-                                    setState(() {
-                                      // Buat copy global dari list ruangan
-                                      final List<Room> updatedRooms = widget.allRooms.map((r) {
-                                        // 1. Jika ini adalah ruangan asal barang yang dipindah
-                                        if (isMoving && r.id == matchedRoom!.id) {
-                                          return r.copyWith(
-                                            items: r.items.where((i) => i.id != matchedItem!.id).toList(),
-                                          );
-                                        }
-                                        // 2. Jika ini adalah ruangan saat ini (tujuan)
-                                        if (r.id == _room.id) {
-                                          List<Item> newItemsList;
-                                          if (isEditing) {
-                                            newItemsList = r.items
-                                                .map((i) => i.id == itemToEdit.id ? newItem : i)
-                                                .toList();
-                                          } else {
-                                            // Jika dipindah, keluarkan dulu versi lamanya dari ruangan ini (antisipasi)
-                                            newItemsList = r.items.where((i) => i.id != newItem.id).toList();
-                                            newItemsList.add(newItem);
+                                    if (saveSuccess) {
+                                      setState(() {
+                                        // Buat copy global dari list ruangan
+                                        final List<Room> updatedRooms = widget.allRooms.map((r) {
+                                          // 1. Jika ini adalah ruangan asal barang yang dipindah
+                                          if (isMoving && r.id == matchedRoom!.id) {
+                                            return r.copyWith(
+                                              items: r.items.where((i) => i.id != matchedItem!.id).toList(),
+                                            );
                                           }
-                                          return r.copyWith(items: newItemsList);
-                                        }
-                                        return r;
-                                      }).toList();
+                                          // 2. Jika ini adalah ruangan saat ini (tujuan)
+                                          if (r.id == _room.id) {
+                                            List<Item> newItemsList;
+                                            if (isEditing) {
+                                              newItemsList = r.items
+                                                  .map((i) => i.id == itemToEdit.id ? newItem : i)
+                                                  .toList();
+                                            } else {
+                                              // Jika dipindah, keluarkan dulu versi lamanya dari ruangan ini (antisipasi)
+                                              newItemsList = r.items.where((i) => i.id != newItem.id).toList();
+                                              newItemsList.add(newItem);
+                                            }
+                                            return r.copyWith(items: newItemsList);
+                                          }
+                                          return r;
+                                        }).toList();
 
-                                      // Perbarui state lokal _room agar UI detail ruangan ini langsung update
-                                      _room = updatedRooms.firstWhere((r) => r.id == _room.id);
-                                      
-                                      // Beritahu parent dashboard agar state global sinkron
-                                      widget.onRoomsChanged(updatedRooms);
-                                    });
+                                        // Perbarui state lokal _room agar UI detail ruangan ini langsung update
+                                        _room = updatedRooms.firstWhere((r) => r.id == _room.id);
+                                        
+                                        // Beritahu parent dashboard agar state global sinkron
+                                        widget.onRoomsChanged(updatedRooms);
+                                      });
 
-                                    Navigator.pop(context);
+                                      if (context.mounted) {
+                                        Navigator.pop(context);
+                                      }
+                                    } else {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Gagal menyimpan barang ke database: $dbError'),
+                                            backgroundColor: Colors.red,
+                                            duration: const Duration(seconds: 5),
+                                          ),
+                                        );
+                                      }
+                                    }
                                   }
                                 },
                                 icon: Icon(isEditing
