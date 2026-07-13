@@ -1208,7 +1208,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   void _showAddRoomDialog(BuildContext context) {
     final nameController = TextEditingController();
-    final yearController = TextEditingController(text: '2024');
+    final yearController = TextEditingController(text: DateTime.now().year.toString());
     final formKey = GlobalKey<FormState>();
 
     showDialog(
