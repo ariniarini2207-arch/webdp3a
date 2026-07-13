@@ -2913,8 +2913,8 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                 ),
               )
             : ListView.builder(
-                shrinkWrap: isMobile,
-                physics: isMobile ? const NeverScrollableScrollPhysics() : null,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
                 itemCount: _room.items.length,
                 itemBuilder: (context, index) {
                   final item = _room.items[index];
