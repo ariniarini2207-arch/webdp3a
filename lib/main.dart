@@ -487,7 +487,7 @@ class _MainAppControllerState extends State<MainAppController> {
 }
 
 // ----------------------------------------------------
-// 1. LOGIN SCREEN — Tema Pemberdayaan Perempuan & Anak
+// 1. LOGIN SCREEN — DP3A DALDUK KB Sulawesi Selatan
 // ----------------------------------------------------
 class LoginScreen extends StatefulWidget {
   final VoidCallback onLoginSuccess;
@@ -679,7 +679,7 @@ class _LoginScreenState extends State<LoginScreen>
                       ),
                       SizedBox(height: isCompact ? 10 : 14),
                       Text(
-                        'Dinas Pemberdayaan Perempuan,\nPerlindungan Anak, Pengendalian\nPenduduk dan Keluarga Berencana',
+                        'DP3A DALDUK KB',
                         style: TextStyle(
                           fontSize: isCompact ? 11.5 : 13,
                           fontWeight: FontWeight.w500,
@@ -752,7 +752,7 @@ class _LoginScreenState extends State<LoginScreen>
                       ),
                       const Spacer(),
                       Text(
-                        '© ${DateTime.now().year} Dinas P3AKB\nProvinsi Sulawesi Selatan',
+                        '© ${DateTime.now().year} Sulawesi Selatan\nDP3A DALDUK KB',
                         style: TextStyle(
                           fontSize: 10.5,
                           color: Colors.white.withOpacity(0.35),
@@ -880,7 +880,7 @@ class _LoginScreenState extends State<LoginScreen>
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      'Dinas P3AKB — Prov. Sulawesi Selatan',
+                      'DP3A DALDUK KB — Prov. Sulawesi Selatan',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w400,
@@ -1149,7 +1149,7 @@ class _LoginScreenState extends State<LoginScreen>
 
             // Footer
             Text(
-              '© $year Dinas P3AKB Provinsi Sulawesi Selatan',
+              '© $year DP3A DALDUK KB Provinsi Sulawesi Selatan',
               style: TextStyle(
                 fontSize: 10.5,
                 color: Colors.grey[400],
@@ -3656,7 +3656,7 @@ class PublicItemScreen extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 4),
                                     const Text(
-                                      'Informasi di atas merupakan data resmi Dinas Pemberdayaan Perempuan, Perlindungan Anak, Pengendalian Penduduk dan Keluarga Berencana Provinsi Sulawesi Selatan.',
+                                      'Informasi di atas merupakan data resmi DP3A DALDUK KB Provinsi Sulawesi Selatan.',
                                       style: TextStyle(
                                           fontSize: 11,
                                           color: Color(0xFF555555),
