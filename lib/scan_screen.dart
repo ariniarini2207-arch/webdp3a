@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:qr_code_dart_decoder/qr_code_dart_decoder.dart';
 
 class ScanScreen extends StatefulWidget {
   const ScanScreen({Key? key}) : super(key: key);
@@ -12,6 +14,64 @@ class _ScanScreenState extends State<ScanScreen> {
   late final MobileScannerController _controller;
   bool _hasDetected = false;
   bool _torchOn = false;
+
+  Future<void> _pickAndScanImage() async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? file = await picker.pickImage(source: ImageSource.gallery);
+      if (file == null) return;
+
+      if (!mounted) return;
+
+      // Tampilkan loader dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(
+            color: Color(0xFFC9E12C),
+          ),
+        ),
+      );
+
+      final bytes = await file.readAsBytes();
+      final decoder = QrCodeDartDecoder();
+      final result = await decoder.decodeFile(bytes);
+
+      if (mounted) {
+        Navigator.pop(context); // Tutup loader dialog
+      }
+
+      if (result != null && result.text.isNotEmpty) {
+        if (mounted) {
+          setState(() => _hasDetected = true);
+          Navigator.pop(context, result.text);
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Tidak dapat menemukan QR Code atau Barcode pada gambar tersebut.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        // Coba tutup loader dialog jika terjadi error
+        try {
+          Navigator.pop(context);
+        } catch (_) {}
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal membaca gambar: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -50,6 +110,11 @@ class _ScanScreenState extends State<ScanScreen> {
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.photo_library_outlined, color: Colors.white),
+            tooltip: 'Pilih dari Galeri',
+            onPressed: _pickAndScanImage,
+          ),
           // Torch toggle
           IconButton(
             icon: Icon(
