@@ -2942,7 +2942,9 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                      }
                                    }
                                   if (formKey.currentState!.validate()) {
-                                    final bool isMoving = !isEditing && matchedItem != null;
+                                    // isMoving hanya true jika kode dimasukkan MANUAL (bukan auto-generate)
+                                    // agar barang dengan jenis/merek sama tidak otomatis dipindah/deduplikasi
+                                    final bool isMoving = !isEditing && !autoGenerateKode && matchedItem != null;
                                     final newItem = Item(
                                       id: isEditing
                                           ? itemToEdit.id
