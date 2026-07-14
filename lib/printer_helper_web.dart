@@ -80,13 +80,30 @@ Future<void> printItemLabelImpl(Item item, Room room) async {
       flex-shrink: 0;
     }
 
-    .title {
+    .title-row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      width: 100%;
+      padding: 0 4px;
+    }
+
+    .corner-logo {
+      width: 0.25cm;
+      height: 0.25cm;
+      object-fit: contain;
+      flex-shrink: 0;
+      filter: drop-shadow(0 1px 1px rgba(0,0,0,0.3));
+    }
+
+    .title-text {
       color: #FFFFFF;
-      font-size: 9pt;
+      font-size: 8pt;
       font-weight: 900;
       letter-spacing: 0.5px;
       text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-      margin-top: -2px;
       text-align: center;
     }
 
@@ -149,16 +166,7 @@ Future<void> printItemLabelImpl(Item item, Room room) async {
       text-transform: uppercase;
     }
 
-    .corner-logo {
-      position: absolute;
-      top: 4px;
-      left: 4px;
-      width: 0.24cm;
-      height: 0.24cm;
-      object-fit: contain;
-      z-index: 10;
-      filter: drop-shadow(0 1px 1px rgba(0,0,0,0.3));
-    }
+
 
     .print-btn {
       position: fixed;
@@ -179,16 +187,16 @@ Future<void> printItemLabelImpl(Item item, Room room) async {
 </head>
 <body>
   <div class="card">
-    <!-- Logo Sulsel top-left corner -->
-    <img id="corner-logo-img" class="corner-logo" alt="Logo Sulsel" />
-
     <!-- Zigzag Top -->
     <svg class="zigzag-top" viewBox="0 0 360 28" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
       <polygon points="0,0 360,0 360,28 330,10 300,28 270,10 240,28 210,10 180,28 150,10 120,28 90,10 60,28 30,10 0,28" fill="rgba(255,255,255,0.15)"/>
       <polygon points="0,0 360,0 360,20 345,6 315,22 285,6 255,22 225,6 195,22 165,6 135,22 105,6 75,22 45,6 15,22 0,8" fill="rgba(255,255,255,0.10)"/>
     </svg>
 
-    <div class="title">SCAN BANDA</div>
+    <div class="title-row">
+      <img id="corner-logo-img" class="corner-logo" alt="Logo Sulsel" />
+      <span class="title-text">SCAN BANDA</span>
+    </div>
 
     <div class="qr-wrapper">
       $qrSvg
