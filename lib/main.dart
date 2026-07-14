@@ -171,6 +171,7 @@ class _MainAppControllerState extends State<MainAppController> {
             teleponPengguna: itemData['telepon_pengguna'] ?? '',
             fotoUrl: itemData['foto_url'] ?? '',
             barcode: itemData['barcode'] ?? '',
+            tahunPerolehan: itemData['tahun_perolehan'] ?? '',
           );
         }).toList();
 
@@ -2298,6 +2299,8 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
         TextEditingController(text: itemToEdit?.teleponPengguna ?? '');
     final fotoController =
         TextEditingController(text: itemToEdit?.fotoUrl ?? '');
+    final tahunPerolehanController =
+        TextEditingController(text: itemToEdit?.tahunPerolehan ?? '');
     // barcode is auto-generated from kodeBarang — no separate controller needed
     final formKey = GlobalKey<FormState>();
     bool isUploadingFoto = false;
@@ -2418,6 +2421,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
         nipUserController.text = foundItem.nipPengguna;
         telpUserController.text = foundItem.teleponPengguna;
         fotoController.text = foundItem.fotoUrl;
+        tahunPerolehanController.text = foundItem.tahunPerolehan;
       }
     }
 
@@ -2463,44 +2467,46 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                               jenisController.text, merekController.text) !=
                           null;
 
-              Widget livePreview = AnimatedBuilder(
-                animation: Listenable.merge([
-                  jenisController,
-                  merekController,
-                  kodeController,
-                  namaUserController,
-                  nipUserController,
-                  telpUserController,
-                  fotoController,
-                ]),
-                builder: (context, _) {
-                  final kode = kodeController.text.isNotEmpty
-                      ? kodeController.text
-                      : '1.3.2.10.02.01.009';
-                  final previewItem = Item(
-                    id: 'preview',
-                    jenisBarang: jenisController.text.isNotEmpty
-                        ? jenisController.text
-                        : 'Jenis Barang',
-                    merekModel: merekController.text.isNotEmpty
-                        ? merekController.text
-                        : 'Merek / Model',
-                    kodeBarang: kode,
-                    namaPengguna: namaUserController.text.isNotEmpty
-                        ? namaUserController.text
-                        : 'Nama Pengguna',
-                    nipPengguna: nipUserController.text.isNotEmpty
-                        ? nipUserController.text
-                        : 'NIP / ID',
-                    teleponPengguna: telpUserController.text.isNotEmpty
-                        ? telpUserController.text
-                        : '08xx-xxxx-xxxx',
-                    fotoUrl: fotoController.text,
-                    barcode: kode, // auto-generated from kodeBarang
+                  Widget livePreview = AnimatedBuilder(
+                    animation: Listenable.merge([
+                      jenisController,
+                      merekController,
+                      kodeController,
+                      namaUserController,
+                      nipUserController,
+                      telpUserController,
+                      fotoController,
+                      tahunPerolehanController,
+                    ]),
+                    builder: (context, _) {
+                      final kode = kodeController.text.isNotEmpty
+                          ? kodeController.text
+                          : '1.3.2.10.02.01.009';
+                      final previewItem = Item(
+                        id: 'preview',
+                        jenisBarang: jenisController.text.isNotEmpty
+                            ? jenisController.text
+                            : 'Jenis Barang',
+                        merekModel: merekController.text.isNotEmpty
+                            ? merekController.text
+                            : 'Merek / Model',
+                        kodeBarang: kode,
+                        namaPengguna: namaUserController.text.isNotEmpty
+                            ? namaUserController.text
+                            : 'Nama Pengguna',
+                        nipPengguna: nipUserController.text.isNotEmpty
+                            ? nipUserController.text
+                            : 'NIP / ID',
+                        teleponPengguna: telpUserController.text.isNotEmpty
+                            ? telpUserController.text
+                            : '08xx-xxxx-xxxx',
+                        fotoUrl: fotoController.text,
+                        barcode: kode,
+                        tahunPerolehan: tahunPerolehanController.text,
+                      );
+                      return GensetCard(room: _room, item: previewItem);
+                    },
                   );
-                  return GensetCard(room: _room, item: previewItem);
-                },
-              );
 
               Widget formContent = Form(
                 key: formKey,
@@ -2594,6 +2600,23 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                     'Merek / Model (Contoh: Epson L5290)',
                                     Icons.devices_outlined),
                                 validator: (v) => v!.isEmpty ? 'Wajib diisi' : null,
+                                onChanged: (val) {
+                                  dialogSetState(() {
+                                    updateKodeBarang();
+                                  });
+                                },
+                              ),
+                              const SizedBox(height: 10),
+                              TextFormField(
+                                controller: tahunPerolehanController,
+                                decoration: themedInput(
+                                    'Tahun Perolehan (Contoh: 2026)',
+                                    Icons.calendar_today_outlined),
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                  LengthLimitingTextInputFormatter(4),
+                                ],
                                 onChanged: (val) {
                                   dialogSetState(() {
                                     updateKodeBarang();
@@ -2932,18 +2955,19 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                        if (foundItem != null) break;
                                      }
                                      if (foundItem != null) {
-                                       final nonNullItem = foundItem;
-                                       dialogSetState(() {
-                                         matchedItem = nonNullItem;
-                                         matchedRoom = foundRoom;
-                                         jenisController.text = nonNullItem.jenisBarang;
-                                         merekController.text = nonNullItem.merekModel;
-                                         namaUserController.text = nonNullItem.namaPengguna;
-                                         nipUserController.text = nonNullItem.nipPengguna;
-                                         telpUserController.text = nonNullItem.teleponPengguna;
-                                         fotoController.text = nonNullItem.fotoUrl;
-                                       });
-                                     }
+                                        final nonNullItem = foundItem;
+                                        dialogSetState(() {
+                                          matchedItem = nonNullItem;
+                                          matchedRoom = foundRoom;
+                                          jenisController.text = nonNullItem.jenisBarang;
+                                          merekController.text = nonNullItem.merekModel;
+                                          namaUserController.text = nonNullItem.namaPengguna;
+                                          nipUserController.text = nonNullItem.nipPengguna;
+                                          telpUserController.text = nonNullItem.teleponPengguna;
+                                          fotoController.text = nonNullItem.fotoUrl;
+                                          tahunPerolehanController.text = nonNullItem.tahunPerolehan;
+                                        });
+                                      }
                                    }
                                   if (formKey.currentState!.validate()) {
                                     // isMoving hanya true jika kode dimasukkan MANUAL (bukan auto-generate)
@@ -2963,6 +2987,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                       nipPengguna: nipUserController.text,
                                       teleponPengguna: telpUserController.text,
                                       fotoUrl: fotoController.text,
+                                      tahunPerolehan: tahunPerolehanController.text,
                                     );
 
                                     bool saveSuccess = true;
@@ -2971,36 +2996,38 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                     if (isSupabaseConfigured) {
                                       try {
                                         if (isEditing || isMoving) {
-                                          await Supabase.instance.client
-                                              .from('items')
-                                              .update({
-                                                'room_id': _room.id,
-                                                'jenis_barang': newItem.jenisBarang,
-                                                'merek_model': newItem.merekModel,
-                                                'kode_barang': newItem.kodeBarang,
-                                                'nama_pengguna': newItem.namaPengguna,
-                                                'nip_pengguna': newItem.nipPengguna,
-                                                'telepon_pengguna': newItem.teleponPengguna,
-                                                'foto_url': newItem.fotoUrl,
-                                                'barcode': newItem.barcode,
-                                              })
-                                              .eq('id', newItem.id);
-                                        } else {
-                                          await Supabase.instance.client
-                                              .from('items')
-                                              .insert({
-                                                'id': newItem.id,
-                                                'room_id': _room.id,
-                                                'jenis_barang': newItem.jenisBarang,
-                                                'merek_model': newItem.merekModel,
-                                                'kode_barang': newItem.kodeBarang,
-                                                'nama_pengguna': newItem.namaPengguna,
-                                                'nip_pengguna': newItem.nipPengguna,
-                                                'telepon_pengguna': newItem.teleponPengguna,
-                                                'foto_url': newItem.fotoUrl,
-                                                'barcode': newItem.barcode,
-                                              });
-                                        }
+                                           await Supabase.instance.client
+                                               .from('items')
+                                               .update({
+                                                 'room_id': _room.id,
+                                                 'jenis_barang': newItem.jenisBarang,
+                                                 'merek_model': newItem.merekModel,
+                                                 'kode_barang': newItem.kodeBarang,
+                                                 'nama_pengguna': newItem.namaPengguna,
+                                                 'nip_pengguna': newItem.nipPengguna,
+                                                 'telepon_pengguna': newItem.teleponPengguna,
+                                                 'foto_url': newItem.fotoUrl,
+                                                 'barcode': newItem.barcode,
+                                                 'tahun_perolehan': newItem.tahunPerolehan,
+                                               })
+                                               .eq('id', newItem.id);
+                                         } else {
+                                           await Supabase.instance.client
+                                               .from('items')
+                                               .insert({
+                                                 'id': newItem.id,
+                                                 'room_id': _room.id,
+                                                 'jenis_barang': newItem.jenisBarang,
+                                                 'merek_model': newItem.merekModel,
+                                                 'kode_barang': newItem.kodeBarang,
+                                                 'nama_pengguna': newItem.namaPengguna,
+                                                 'nip_pengguna': newItem.nipPengguna,
+                                                 'telepon_pengguna': newItem.teleponPengguna,
+                                                 'foto_url': newItem.fotoUrl,
+                                                 'barcode': newItem.barcode,
+                                                 'tahun_perolehan': newItem.tahunPerolehan,
+                                               });
+                                         }
                                       } catch (e) {
                                         saveSuccess = false;
                                         dbError = e.toString();

@@ -219,7 +219,7 @@ class GensetCard extends StatelessWidget {
                               ),
                               SizedBox(height: 8 * scale),
                               Text(
-                                room.year,
+                                item.tahunPerolehan.isNotEmpty ? item.tahunPerolehan : room.year,
                                 style: TextStyle(
                                   fontSize: 14 * scale,
                                   fontWeight: FontWeight.w700,

@@ -8,6 +8,7 @@ class Item {
   String teleponPengguna;
   String fotoUrl;
   String barcode;
+  String tahunPerolehan;
 
   Item({
     required this.id,
@@ -19,6 +20,7 @@ class Item {
     required this.teleponPengguna,
     required this.fotoUrl,
     required this.barcode,
+    this.tahunPerolehan = '',
   });
 
   // Convert an Item to a Map for JSON storage/mock state
@@ -33,6 +35,7 @@ class Item {
       'teleponPengguna': teleponPengguna,
       'fotoUrl': fotoUrl,
       'barcode': barcode,
+      'tahunPerolehan': tahunPerolehan,
     };
   }
 
@@ -48,6 +51,7 @@ class Item {
       teleponPengguna: map['teleponPengguna'] ?? '',
       fotoUrl: map['fotoUrl'] ?? '',
       barcode: map['barcode'] ?? '',
+      tahunPerolehan: map['tahunPerolehan'] ?? '',
     );
   }
 
@@ -61,6 +65,7 @@ class Item {
     String? teleponPengguna,
     String? fotoUrl,
     String? barcode,
+    String? tahunPerolehan,
   }) {
     return Item(
       id: id ?? this.id,
@@ -72,6 +77,7 @@ class Item {
       teleponPengguna: teleponPengguna ?? this.teleponPengguna,
       fotoUrl: fotoUrl ?? this.fotoUrl,
       barcode: barcode ?? this.barcode,
+      tahunPerolehan: tahunPerolehan ?? this.tahunPerolehan,
     );
   }
 }
