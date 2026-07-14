@@ -21,14 +21,14 @@ Future<void> printItemLabelImpl(Item item, Room room) async {
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     @page {
-      size: 3cm 5cm;
+      size: 5cm 7cm;
       margin: 0;
     }
 
     @media print {
       html, body {
-        width: 3cm;
-        height: 5cm;
+        width: 5cm;
+        height: 7cm;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
@@ -51,10 +51,10 @@ Future<void> printItemLabelImpl(Item item, Room room) async {
     }
 
     .card {
-      width: 3cm;
-      height: 5cm;
+      width: 5cm;
+      height: 7cm;
       background: linear-gradient(160deg, #1565C0 0%, #1976D2 40%, #2196F3 100%);
-      border-radius: 6px;
+      border-radius: 10px;
       box-shadow: 0 4px 16px rgba(0,0,0,0.4);
       display: flex;
       flex-direction: column;
@@ -69,14 +69,14 @@ Future<void> printItemLabelImpl(Item item, Room room) async {
     /* Zigzag top decoration */
     .zigzag-top {
       width: 100%;
-      height: 10px;
+      height: 18px;
       flex-shrink: 0;
     }
 
     /* Zigzag bottom decoration */
     .zigzag-bottom {
       width: 100%;
-      height: 10px;
+      height: 18px;
       flex-shrink: 0;
     }
 
@@ -91,8 +91,8 @@ Future<void> printItemLabelImpl(Item item, Room room) async {
     }
 
     .corner-logo {
-      width: 0.25cm;
-      height: 0.25cm;
+      width: 0.45cm;
+      height: 0.45cm;
       object-fit: contain;
       flex-shrink: 0;
       filter: drop-shadow(0 1px 1px rgba(0,0,0,0.3));
@@ -100,20 +100,20 @@ Future<void> printItemLabelImpl(Item item, Room room) async {
 
     .title-text {
       color: #FFFFFF;
-      font-size: 8pt;
+      font-size: 13pt;
       font-weight: 900;
-      letter-spacing: 0.5px;
+      letter-spacing: 1px;
       text-shadow: 0 1px 3px rgba(0,0,0,0.3);
       text-align: center;
     }
 
     .qr-wrapper {
       background: white;
-      border-radius: 4px;
-      padding: 4px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-      width: 2.2cm;
-      height: 2.2cm;
+      border-radius: 8px;
+      padding: 7px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.25);
+      width: 3.6cm;
+      height: 3.6cm;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -133,16 +133,16 @@ Future<void> printItemLabelImpl(Item item, Room room) async {
     }
 
     .info-name {
-      font-size: 6pt;
+      font-size: 9pt;
       font-weight: 900;
       color: #1565C0;
       text-transform: uppercase;
-      letter-spacing: 0.1px;
-      line-height: 1.2;
+      letter-spacing: 0.3px;
+      line-height: 1.3;
     }
 
     .info-code {
-      font-size: 5pt;
+      font-size: 7pt;
       font-weight: 700;
       color: #333;
       margin-top: 2px;
@@ -152,17 +152,17 @@ Future<void> printItemLabelImpl(Item item, Room room) async {
     .footer-bar {
       background: rgba(255,255,255,0.18);
       width: 80%;
-      border-radius: 8px;
-      padding: 2px 6px;
-      margin-bottom: 2px;
+      border-radius: 12px;
+      padding: 3px 10px;
+      margin-bottom: 3px;
     }
 
     .footer-text {
-      font-size: 5pt;
+      font-size: 7.5pt;
       font-weight: 900;
       color: #FFFFFF;
       text-align: center;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.5px;
       text-transform: uppercase;
     }
 
@@ -265,7 +265,7 @@ Future<void> printItemLabelImpl(Item item, Room room) async {
 
   final blob = html.Blob([htmlContent], 'text/html');
   final url = html.Url.createObjectUrlFromBlob(blob);
-  html.window.open(url, 'label-${item.id}', 'width=300,height=500');
+  html.window.open(url, 'label-${item.id}', 'width=360,height=510');
   Future.delayed(
       const Duration(seconds: 60), () => html.Url.revokeObjectUrl(url));
 }
