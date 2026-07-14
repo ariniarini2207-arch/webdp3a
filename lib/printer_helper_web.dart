@@ -436,7 +436,7 @@ Future<void> printRoomLabelImpl(Room room) async {
 
     <div class="info-box">
       <div class="info-name">${room.name}</div>
-      <div class="info-code">${room.year} — ${room.barcode.replaceFirst('RM-', '').replaceAll('-', ' ')}</div>
+      <div class="info-code">${room.year} — ${room.barcode.replaceFirst('RM-', '').replaceFirst('-${room.year}', '').replaceAll('-', ' ')}</div>
     </div>
 
     <div class="footer-bar">
