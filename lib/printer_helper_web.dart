@@ -128,8 +128,8 @@ Future<void> printItemLabelImpl(Item item, Room room) async {
       font-size: 8pt;
       font-weight: 700;
       color: #333;
-      font-family: 'Courier New', monospace;
       margin-top: 2px;
+      text-transform: uppercase;
     }
 
     .footer-bar {
@@ -195,8 +195,8 @@ Future<void> printItemLabelImpl(Item item, Room room) async {
     </div>
 
     <div class="info-box">
-      <div class="info-name">${item.jenisBarang}</div>
-      <div class="info-code">${item.kodeBarang.replaceAll('-', ' ')}</div>
+      <div class="info-name">${item.jenisBarang}${item.merekModel.isNotEmpty ? ' — ${item.merekModel}' : ''}</div>
+      <div class="info-code">${room.name}</div>
     </div>
 
     <div class="footer-bar">
