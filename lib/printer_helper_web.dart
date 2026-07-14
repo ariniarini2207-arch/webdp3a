@@ -195,8 +195,8 @@ Future<void> printItemLabelImpl(Item item, Room room) async {
     </div>
 
     <div class="info-box">
-      <div class="info-name">${item.jenisBarang}${item.merekModel.isNotEmpty ? ' — ${item.merekModel}' : ''}</div>
-      <div class="info-code">${room.name}</div>
+      <div class="info-name">${room.name}</div>
+      <div class="info-code">${item.jenisBarang}${item.merekModel.isNotEmpty ? ' — ${item.merekModel}' : ''}</div>
     </div>
 
     <div class="footer-bar">
