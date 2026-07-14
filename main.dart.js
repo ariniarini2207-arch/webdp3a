@@ -94943,11 +94943,11 @@ $0(){A.ds(this.a,!1).fq(null)
 return null},
 $S:0}
 A.aBA.prototype={
-$0(){var s=0,r=A.x(t.H),q=1,p=[],o=this,n,m,l,k,j,i,h,g,f,e,d,c,b,a,a0,a1,a2,a3,a4,a5
-var $async$$0=A.t(function(a6,a7){if(a6===1){p.push(a7)
-s=q}for(;;)switch(s){case 0:a3=o.c
-a4=!a3
-if(a4&&B.c.b8(o.d.a.a).length!==0){i={}
+$0(){var s=0,r=A.x(t.H),q=1,p=[],o=this,n,m,l,k,j,i,h,g,f,e,d,c,b,a,a0,a1,a2,a3,a4,a5,a6
+var $async$$0=A.t(function(a7,a8){if(a7===1){p.push(a8)
+s=q}for(;;)switch(s){case 0:a4=o.c
+a5=!a4
+if(a5&&B.c.b8(o.d.a.a).length!==0){i={}
 h=B.c.b8(o.d.a.a)
 i.a=null
 g=o.b.e
@@ -94961,8 +94961,10 @@ if(B.c.b8(a1.d)===h){i.a=c
 e=a1
 break}}if(e!=null)break}if(e!=null)o.e.$1(new A.aBk(o.a,i,e,o.f,o.r,o.w,o.x,o.y,o.z))}s=o.Q.gN().q6()?2:3
 break
-case 2:n=a4&&o.a.d!=null
-if(a3)g=o.as.a
+case 2:if(a5){g=o.a
+a2=!g.a&&g.d!=null}else a2=!1
+n=a2
+if(a4)g=o.as.a
 else g=n?o.a.d.a:"item-"+Date.now()
 f=o.f.a.a
 b=o.r.a.a
@@ -94971,35 +94973,35 @@ m=new A.ce(g,f,b,a,o.w.a.a,o.x.a.a,o.y.a.a,o.z.a.a,a)
 l=!0
 k=null
 q=5
-a4=!a4||n
+a5=!a5||n
 g=o.b
-s=a4?8:10
+s=a5?8:10
 break
-case 8:a4=$.fv().b
-a4===$&&A.a()
-a4=a4.kk("items")
+case 8:a5=$.fv().b
+a5===$&&A.a()
+a5=a5.kk("items")
 g=g.d
 g===$&&A.a()
 f=t.z
 s=11
-return A.p(a4.cj(0,A.ao(["room_id",g.a,"jenis_barang",m.b,"merek_model",m.c,"kode_barang",m.d,"nama_pengguna",m.e,"nip_pengguna",m.f,"telepon_pengguna",m.r,"foto_url",m.w,"barcode",m.x],f,f)).Ce("id",m.a),$async$$0)
+return A.p(a5.cj(0,A.ao(["room_id",g.a,"jenis_barang",m.b,"merek_model",m.c,"kode_barang",m.d,"nama_pengguna",m.e,"nip_pengguna",m.f,"telepon_pengguna",m.r,"foto_url",m.w,"barcode",m.x],f,f)).Ce("id",m.a),$async$$0)
 case 11:s=9
 break
-case 10:a4=$.fv().b
-a4===$&&A.a()
-a4=a4.kk("items")
+case 10:a5=$.fv().b
+a5===$&&A.a()
+a5=a5.kk("items")
 f=m.a
 g=g.d
 g===$&&A.a()
 b=t.N
 s=12
-return A.p(a4.jC(0,A.ao(["id",f,"room_id",g.a,"jenis_barang",m.b,"merek_model",m.c,"kode_barang",m.d,"nama_pengguna",m.e,"nip_pengguna",m.f,"telepon_pengguna",m.r,"foto_url",m.w,"barcode",m.x],b,b)),$async$$0)
+return A.p(a5.jC(0,A.ao(["id",f,"room_id",g.a,"jenis_barang",m.b,"merek_model",m.c,"kode_barang",m.d,"nama_pengguna",m.e,"nip_pengguna",m.f,"telepon_pengguna",m.r,"foto_url",m.w,"barcode",m.x],b,b)),$async$$0)
 case 12:case 9:q=1
 s=7
 break
 case 5:q=4
-a5=p.pop()
-j=A.W(a5)
+a6=p.pop()
+j=A.W(a6)
 l=!1
 k=J.cR(j)
 A.lu().$1("Supabase Item Add/Edit Error: "+A.k(j))
@@ -95007,11 +95009,11 @@ s=7
 break
 case 4:s=1
 break
-case 7:if(l){a4=o.b
-a4.a9(new A.aBl(o.a,a4,n,a3,o.as,m))
-a3=o.at
-if(a3.e!=null)A.ds(a3,!1).fq(null)}else{a3=o.at
-if(a3.e!=null)a3.al(t.Pu).f.F8(A.api(null,null,null,B.cH,null,B.S,null,A.b7("Gagal menyimpan barang ke database: "+A.k(k),null,null,null,null,null,null),null,B.IW,null,null,null,null,null,null,null,null,null,null))}case 3:return A.v(null,r)
+case 7:if(l){a5=o.b
+a5.a9(new A.aBl(o.a,a5,n,a4,o.as,m))
+a4=o.at
+if(a4.e!=null)A.ds(a4,!1).fq(null)}else{a4=o.at
+if(a4.e!=null)a4.al(t.Pu).f.F8(A.api(null,null,null,B.cH,null,B.S,null,A.b7("Gagal menyimpan barang ke database: "+A.k(k),null,null,null,null,null,null),null,B.IW,null,null,null,null,null,null,null,null,null,null))}case 3:return A.v(null,r)
 case 1:return A.u(p.at(-1),r)}})
 return A.w($async$$0,r)},
 $S:7}
