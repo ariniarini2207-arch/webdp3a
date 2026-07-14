@@ -1211,20 +1211,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Keluar',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF111111),
-                ),
+              // Header with navy icon
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1A2F5A).withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.logout_rounded,
+                        color: Color(0xFF1A2F5A), size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Keluar',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1A2F5A),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
+              Container(height: 1, color: const Color(0xFFEEF2F8)),
+              const SizedBox(height: 12),
               const Text(
-                'Apakah anda yakin untuk keluar?',
+                'Apakah anda yakin untuk keluar dari Panel Admin?',
                 style: TextStyle(
                   fontSize: 13,
-                  color: Color(0xFF666666),
+                  color: Color(0xFF4A5568),
                   height: 1.4,
                 ),
               ),
@@ -1232,11 +1249,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFC9E12C),
-                      foregroundColor: const Color(0xFF111111),
-                      elevation: 0,
+                  OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFFD0D8E8)),
+                      foregroundColor: const Color(0xFF4A5568),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 22, vertical: 11),
                       shape: RoundedRectangleBorder(
@@ -1245,26 +1261,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     onPressed: () => Navigator.pop(ctx, false),
                     child: const Text(
-                      'Tidak',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      'Batal',
+                      style: TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ),
                   const SizedBox(width: 10),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE8776F),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 22, vertical: 11),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF1A2F5A), Color(0xFF2D4A8A)],
                       ),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    onPressed: () => Navigator.pop(ctx, true),
-                    child: const Text(
-                      'Ya',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        foregroundColor: Colors.white,
+                        shadowColor: Colors.transparent,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 22, vertical: 11),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onPressed: () => Navigator.pop(ctx, true),
+                      child: const Text(
+                        'Ya, Keluar',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                 ],
@@ -1284,97 +1309,179 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final yearController = TextEditingController(text: DateTime.now().year.toString());
     final formKey = GlobalKey<FormState>();
 
+    InputDecoration _navyInput(String label, String hint, IconData icon) {
+      return InputDecoration(
+        labelText: label,
+        hintText: hint,
+        labelStyle: const TextStyle(color: Color(0xFF4A5568), fontSize: 13),
+        prefixIcon: Icon(icon, color: const Color(0xFF1A2F5A), size: 18),
+        filled: true,
+        fillColor: const Color(0xFFF8FAFC),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Color(0xFFD0D8E8)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Color(0xFFD0D8E8)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Color(0xFF1A2F5A), width: 1.5),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      );
+    }
+
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Buat Ruangan Baru'),
-          content: Form(
-            key: formKey,
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 420),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextFormField(
-                  controller: nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Nama Ruangan',
-                    hintText: 'Misal: Ruang Rapat',
+                // Header navy gradient
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF1A2F5A), Color(0xFF1E3A6E)],
+                    ),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Nama ruangan tidak boleh kosong';
-                    }
-                    return null;
-                  },
+                  child: const Row(
+                    children: [
+                      Icon(Icons.add_business_rounded, color: Color(0xFFE8C155), size: 22),
+                      SizedBox(width: 10),
+                      Text(
+                        'Buat Ruangan Baru',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: yearController,
-                  decoration: const InputDecoration(
-                    labelText: 'Tahun',
-                    hintText: 'Misal: 2024',
+                // Form content
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextFormField(
+                          controller: nameController,
+                          decoration: _navyInput('Nama Ruangan', 'Misal: Ruang Rapat', Icons.meeting_room_outlined),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Nama ruangan tidak boleh kosong';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: yearController,
+                          decoration: _navyInput('Tahun', 'Misal: 2024', Icons.calendar_today_outlined),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Tahun tidak boleh kosong';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            OutlinedButton(
+                              onPressed: () => Navigator.pop(context),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(color: Color(0xFFD0D8E8)),
+                                foregroundColor: const Color(0xFF4A5568),
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                              child: const Text('Batal', style: TextStyle(fontWeight: FontWeight.w600)),
+                            ),
+                            const SizedBox(width: 10),
+                            Container(
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF1A2F5A), Color(0xFF2D4A8A)],
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: ElevatedButton.icon(
+                                onPressed: () async {
+                                  if (formKey.currentState!.validate()) {
+                                    final newRoom = Room(
+                                      id: 'room-${DateTime.now().millisecondsSinceEpoch}',
+                                      name: nameController.text,
+                                      year: yearController.text,
+                                      barcode:
+                                          'RM-${nameController.text.toUpperCase().replaceAll(' ', '-')}-${yearController.text}',
+                                      items: [],
+                                    );
+
+                                    if (isSupabaseConfigured) {
+                                      try {
+                                        await Supabase.instance.client.from('rooms').insert({
+                                          'id': newRoom.id,
+                                          'name': newRoom.name,
+                                          'year': newRoom.year,
+                                          'barcode': newRoom.barcode,
+                                        });
+                                        debugPrint('Supabase: Room berhasil disimpan!');
+                                      } catch (e) {
+                                        debugPrint('Supabase Room Insert Error: $e');
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Gagal simpan ke database: $e'),
+                                              backgroundColor: const Color(0xFF1A2F5A),
+                                              duration: const Duration(seconds: 6),
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    }
+
+                                    onRoomsChanged([...rooms, newRoom]);
+                                    Navigator.pop(context);
+                                  }
+                                },
+                                icon: const Icon(Icons.save_outlined, size: 16),
+                                label: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.w700)),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF1A2F5A),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10)),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Tahun tidak boleh kosong';
-                    }
-                    return null;
-                  },
                 ),
               ],
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Batal'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (formKey.currentState!.validate()) {
-                  final newRoom = Room(
-                    id: 'room-${DateTime.now().millisecondsSinceEpoch}',
-                    name: nameController.text,
-                    year: yearController.text,
-                    barcode:
-                        'RM-${nameController.text.toUpperCase().replaceAll(' ', '-')}-${yearController.text}',
-                    items: [],
-                  );
-
-                  if (isSupabaseConfigured) {
-                    try {
-                      await Supabase.instance.client.from('rooms').insert({
-                        'id': newRoom.id,
-                        'name': newRoom.name,
-                        'year': newRoom.year,
-                        'barcode': newRoom.barcode,
-                      });
-                      debugPrint('Supabase: Room berhasil disimpan!');
-                    } catch (e) {
-                      debugPrint('Supabase Room Insert Error: $e');
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Gagal simpan ke database: $e'),
-                            backgroundColor: Colors.red,
-                            duration: const Duration(seconds: 6),
-                          ),
-                        );
-                      }
-                    }
-                  }
-
-                  onRoomsChanged([...rooms, newRoom]);
-                  Navigator.pop(context);
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF111111),
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Simpan'),
-            ),
-          ],
         );
       },
     );
@@ -1385,82 +1492,173 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final yearController = TextEditingController(text: room.year);
     final formKey = GlobalKey<FormState>();
 
+    InputDecoration _navyInput(String label, IconData icon) {
+      return InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Color(0xFF4A5568), fontSize: 13),
+        prefixIcon: Icon(icon, color: const Color(0xFF1A2F5A), size: 18),
+        filled: true,
+        fillColor: const Color(0xFFF8FAFC),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Color(0xFFD0D8E8)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Color(0xFFD0D8E8)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Color(0xFF1A2F5A), width: 1.5),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      );
+    }
+
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Edit Ruangan'),
-          content: Form(
-            key: formKey,
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 420),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextFormField(
-                  controller: nameController,
-                  decoration: const InputDecoration(labelText: 'Nama Ruangan'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Nama ruangan tidak boleh kosong';
-                    }
-                    return null;
-                  },
+                // Header navy gradient
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF1A2F5A), Color(0xFF1E3A6E)],
+                    ),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.edit_note_rounded, color: Color(0xFFE8C155), size: 22),
+                      SizedBox(width: 10),
+                      Text(
+                        'Edit Ruangan',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: yearController,
-                  decoration: const InputDecoration(labelText: 'Tahun'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Tahun tidak boleh kosong';
-                    }
-                    return null;
-                  },
+                // Form content
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextFormField(
+                          controller: nameController,
+                          decoration: _navyInput('Nama Ruangan', Icons.meeting_room_outlined),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Nama ruangan tidak boleh kosong';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: yearController,
+                          decoration: _navyInput('Tahun', Icons.calendar_today_outlined),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Tahun tidak boleh kosong';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            OutlinedButton(
+                              onPressed: () => Navigator.pop(context),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(color: Color(0xFFD0D8E8)),
+                                foregroundColor: const Color(0xFF4A5568),
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                              child: const Text('Batal', style: TextStyle(fontWeight: FontWeight.w600)),
+                            ),
+                            const SizedBox(width: 10),
+                            Container(
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF1A2F5A), Color(0xFF2D4A8A)],
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: ElevatedButton.icon(
+                                onPressed: () async {
+                                  if (formKey.currentState!.validate()) {
+                                    final editedBarcode = 'RM-${nameController.text.toUpperCase().replaceAll(' ', '-')}-${yearController.text}';
+
+                                    if (isSupabaseConfigured) {
+                                      try {
+                                        await Supabase.instance.client
+                                            .from('rooms')
+                                            .update({
+                                              'name': nameController.text,
+                                              'year': yearController.text,
+                                              'barcode': editedBarcode,
+                                            })
+                                            .eq('id', room.id);
+                                      } catch (e) {
+                                        debugPrint('Supabase Room Update Error: $e');
+                                      }
+                                    }
+
+                                    final updatedRooms = rooms.map((r) {
+                                      if (r.id == room.id) {
+                                        return r.copyWith(
+                                          name: nameController.text,
+                                          year: yearController.text,
+                                          barcode: editedBarcode,
+                                        );
+                                      }
+                                      return r;
+                                    }).toList();
+                                    onRoomsChanged(updatedRooms);
+                                    Navigator.pop(context);
+                                  }
+                                },
+                                icon: const Icon(Icons.save_outlined, size: 16),
+                                label: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.w700)),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF1A2F5A),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10)),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Batal'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (formKey.currentState!.validate()) {
-                  final editedBarcode = 'RM-${nameController.text.toUpperCase().replaceAll(' ', '-')}-${yearController.text}';
-
-                  if (isSupabaseConfigured) {
-                    try {
-                      await Supabase.instance.client
-                          .from('rooms')
-                          .update({
-                            'name': nameController.text,
-                            'year': yearController.text,
-                            'barcode': editedBarcode,
-                          })
-                          .eq('id', room.id);
-                    } catch (e) {
-                      debugPrint('Supabase Room Update Error: $e');
-                    }
-                  }
-
-                  final updatedRooms = rooms.map((r) {
-                    if (r.id == room.id) {
-                      return r.copyWith(
-                        name: nameController.text,
-                        year: yearController.text,
-                        barcode: editedBarcode,
-                      );
-                    }
-                    return r;
-                  }).toList();
-                  onRoomsChanged(updatedRooms);
-                  Navigator.pop(context);
-                }
-              },
-              child: const Text('Simpan'),
-            ),
-          ],
         );
       },
     );
@@ -1486,11 +1684,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF111111),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF1A2F5A), Color(0xFF1E3A6E)],
+            ),
+          ),
+        ),
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
-        title: const Text(
-          'GENSET Admin Dashboard',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFCFA836).withOpacity(0.25),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.inventory_2_outlined,
+                  color: Color(0xFFE8C155), size: 18),
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              'GENSET Admin Dashboard',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ],
         ),
         actions: [
           IconButton(
@@ -1514,7 +1735,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               fit: BoxFit.cover,
             ),
           ),
-          // Gradient overlay for readability
+          // Gradient overlay konsisten dengan login (navy/gold)
           Positioned.fill(
             child: DecoratedBox(
               decoration: BoxDecoration(
@@ -1522,9 +1743,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    const Color(0xFFFFF8F0).withOpacity(0.4),
-                    const Color(0xFFE8776F).withOpacity(0.2),
-                    const Color(0xFF2A9D8F).withOpacity(0.2),
+                    const Color(0xFFF5F7FA).withOpacity(0.6),
+                    const Color(0xFFEDF2FB).withOpacity(0.72),
+                    const Color(0xFFEAEEF8).withOpacity(0.80),
                   ],
                   stops: const [0.0, 0.5, 1.0],
                 ),
@@ -1564,14 +1785,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   Row(
                                     children: [
                                       const Icon(Icons.door_sliding_outlined,
-                                          color: Color(0xFF2A9D8F), size: 24),
+                                          color: Color(0xFF1A2F5A), size: 24),
                                       const SizedBox(width: 8),
                                       const Text(
                                         'Daftar Ruangan Terdaftar',
                                         style: TextStyle(
                                             fontSize: 22,
                                             fontWeight: FontWeight.w900,
-                                            color: Colors.black),
+                                            color: Color(0xFF1A2F5A)),
                                       ),
                                     ],
                                   ),
@@ -1579,23 +1800,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   Text(
                                     'Total ruangan: ${rooms.length}',
                                     style: const TextStyle(
-                                        color: Colors.black87,
+                                        color: Color(0xFF4A5568),
                                         fontWeight: FontWeight.w600,
                                         fontSize: 13),
                                   ),
                                 ],
                               ),
-                              ElevatedButton.icon(
-                                onPressed: () => _showAddRoomDialog(context),
-                                icon: const Icon(Icons.add),
-                                label: const Text('Tambah Ruangan'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFC9E12C),
-                                  foregroundColor: const Color(0xFF111111),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 20, vertical: 12),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                              Container(
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFF1A2F5A), Color(0xFF2D4A8A)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: ElevatedButton.icon(
+                                  onPressed: () => _showAddRoomDialog(context),
+                                  icon: const Icon(Icons.add),
+                                  label: const Text('Tambah Ruangan'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.transparent,
+                                    foregroundColor: Colors.white,
+                                    shadowColor: Colors.transparent,
+                                    elevation: 0,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20, vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -1607,7 +1838,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               Row(
                                 children: [
                                   const Icon(Icons.door_sliding_outlined,
-                                      color: Color(0xFF2A9D8F), size: 24),
+                                      color: Color(0xFF1A2F5A), size: 24),
                                   const SizedBox(width: 8),
                                   const Expanded(
                                     child: Text(
@@ -1615,7 +1846,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       style: TextStyle(
                                           fontSize: 22,
                                           fontWeight: FontWeight.w900,
-                                          color: Colors.black),
+                                          color: Color(0xFF1A2F5A)),
                                     ),
                                   ),
                                 ],
@@ -1624,21 +1855,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               Text(
                                 'Total ruangan: ${rooms.length}',
                                 style: const TextStyle(
-                                    color: Colors.black87,
+                                    color: Color(0xFF4A5568),
                                     fontWeight: FontWeight.w600,
                                     fontSize: 13),
                               ),
                               const SizedBox(height: 16),
-                              ElevatedButton.icon(
-                                onPressed: () => _showAddRoomDialog(context),
-                                icon: const Icon(Icons.add),
-                                label: const Text('Tambah Ruangan'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFC9E12C),
-                                  foregroundColor: const Color(0xFF111111),
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                              Container(
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFF1A2F5A), Color(0xFF2D4A8A)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: ElevatedButton.icon(
+                                  onPressed: () => _showAddRoomDialog(context),
+                                  icon: const Icon(Icons.add),
+                                  label: const Text('Tambah Ruangan'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.transparent,
+                                    foregroundColor: Colors.white,
+                                    shadowColor: Colors.transparent,
+                                    elevation: 0,
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -1673,20 +1914,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 children: [
                                   Icon(Icons.door_sliding_outlined,
                                       size: 80,
-                                      color: const Color(0xFFE8776F).withOpacity(0.6)),
+                                      color: const Color(0xFF1A2F5A).withOpacity(0.25)),
                                   const SizedBox(height: 16),
                                   const Text(
                                     'Belum ada ruangan.',
                                     style: TextStyle(
                                         fontSize: 18,
-                                        color: Color(0xFF2C3E50),
+                                        color: Color(0xFF1A2F5A),
                                         fontWeight: FontWeight.bold),
                                     textAlign: TextAlign.center,
                                   ),
                                   const SizedBox(height: 8),
                                   const Text(
                                     'Buat ruangan baru untuk mulai menambahkan barang.',
-                                    style: TextStyle(color: Color(0xFF555555)),
+                                    style: TextStyle(color: Color(0xFF4A5568)),
                                     textAlign: TextAlign.center,
                                   ),
                                 ],
@@ -1751,11 +1992,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         ],
                                       ),
                                       const Spacer(),
-                                      Text(
-                                        'Jumlah Aset: ${room.items.length} barang',
-                                        style: const TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF1A2F5A).withOpacity(0.08),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Text(
+                                          'Jumlah Aset: ${room.items.length} barang',
+                                          style: const TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w700,
+                                              color: Color(0xFF1A2F5A)),
+                                        ),
                                       ),
                                       const SizedBox(height: 16),
                                       Row(
@@ -1764,36 +2013,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           IconButton(
                                             onPressed: () => _showEditRoomDialog(
                                                 context, room),
-                                            icon: const Icon(Icons.edit_outlined),
+                                            icon: const Icon(Icons.edit_outlined,
+                                                color: Color(0xFF1A2F5A)),
                                             tooltip: 'Edit Ruangan',
                                           ),
                                           IconButton(
                                             onPressed: () => _deleteRoom(room),
                                             icon: const Icon(Icons.delete_outline,
-                                                color: Colors.red),
+                                                color: Color(0xFFC0392B)),
                                             tooltip: 'Hapus Ruangan',
                                           ),
                                           const SizedBox(width: 8),
-                                          ElevatedButton(
-                                            onPressed: () {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      RoomDetailsScreen(
-                                                    room: room,
-                                                    allRooms: rooms,
-                                                    onRoomsChanged: onRoomsChanged,
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor:
-                                                  const Color(0xFF111111),
-                                              foregroundColor: Colors.white,
+                                          Container(
+                                            decoration: BoxDecoration(
+                                              gradient: const LinearGradient(
+                                                colors: [Color(0xFF1A2F5A), Color(0xFF2D4A8A)],
+                                              ),
+                                              borderRadius: BorderRadius.circular(8),
                                             ),
-                                            child: const Text('Buka'),
+                                            child: ElevatedButton(
+                                              onPressed: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        RoomDetailsScreen(
+                                                      room: room,
+                                                      allRooms: rooms,
+                                                      onRoomsChanged: onRoomsChanged,
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.transparent,
+                                                foregroundColor: Colors.white,
+                                                shadowColor: Colors.transparent,
+                                                elevation: 0,
+                                              ),
+                                              child: const Text('Buka'),
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -2010,23 +2269,23 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
     InputDecoration themedInput(String label, IconData icon) {
       return InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Color(0xFF888888), fontSize: 13),
-        prefixIcon: Icon(icon, color: const Color(0xFF2A9D8F), size: 18),
+        labelStyle: const TextStyle(color: Color(0xFF4A5568), fontSize: 13),
+        prefixIcon: Icon(icon, color: const Color(0xFF1A2F5A), size: 18),
         filled: true,
-        fillColor: const Color(0xFFFFF8F4),
+        fillColor: const Color(0xFFF8FAFC),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFFFFD5C8)),
+          borderSide: const BorderSide(color: Color(0xFFD0D8E8)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFFFFD5C8)),
+          borderSide: const BorderSide(color: Color(0xFFD0D8E8)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFF2A9D8F), width: 2),
+          borderSide: const BorderSide(color: Color(0xFF1A2F5A), width: 2),
         ),
       );
     }
@@ -2094,12 +2353,14 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Header gradient
+                    // Header gradient navy (konsisten dengan login)
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFFE8776F), Color(0xFF2A9D8F)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0xFF1A2F5A), Color(0xFF1E3A6E)],
                         ),
                         borderRadius: isWide
                             ? const BorderRadius.only(
@@ -2111,21 +2372,28 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                       ),
                       child: Row(
                         children: [
-                          Icon(
-                            isEditing
-                                ? Icons.edit_note_rounded
-                                : Icons.add_box_rounded,
-                            color: Colors.white,
-                            size: 26,
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFCFA836).withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              isEditing
+                                  ? Icons.edit_note_rounded
+                                  : Icons.add_box_rounded,
+                              color: const Color(0xFFE8C155),
+                              size: 22,
+                            ),
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               isEditing
                                   ? 'Edit Data Barang'
                                   : 'Tambah Barang Baru',
                               style: const TextStyle(
-                                fontSize: 18,
+                                fontSize: 17,
                                 fontWeight: FontWeight.w900,
                                 color: Colors.white,
                               ),
@@ -2133,7 +2401,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                           ),
                           IconButton(
                             onPressed: () => Navigator.pop(context),
-                            icon: const Icon(Icons.close, color: Colors.white),
+                            icon: const Icon(Icons.close, color: Colors.white70),
                             tooltip: 'Tutup',
                           ),
                         ],
@@ -2150,7 +2418,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                               _sectionLabel(
                                   'Informasi Barang',
                                   Icons.inventory_2_outlined,
-                                  const Color(0xFFE8776F)),
+                                  const Color(0xFF1A2F5A)),
                               const SizedBox(height: 10),
                               TextFormField(
                                 controller: jenisController,
@@ -2187,17 +2455,17 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 12, vertical: 8),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFF0FBF9),
+                                      color: const Color(0xFFEFF3FC),
                                       borderRadius: BorderRadius.circular(10),
                                       border: Border.all(
-                                          color: const Color(0xFF2A9D8F)
-                                              .withOpacity(0.3)),
+                                          color: const Color(0xFF1A2F5A)
+                                              .withOpacity(0.25)),
                                     ),
                                     child: Row(
                                       children: [
                                         const Icon(Icons.auto_fix_high,
                                             size: 16,
-                                            color: Color(0xFF2A9D8F)),
+                                            color: Color(0xFF1A2F5A)),
                                         const SizedBox(width: 8),
                                         Expanded(
                                           child: Text(
@@ -2207,14 +2475,14 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                             style: const TextStyle(
                                               fontSize: 12,
                                               fontWeight: FontWeight.w600,
-                                              color: Color(0xFF2A9D8F),
+                                              color: Color(0xFF1A2F5A),
                                             ),
                                           ),
                                         ),
                                         Switch(
                                           value: autoGenerateKode,
                                           activeColor:
-                                              const Color(0xFF2A9D8F),
+                                              const Color(0xFF1A2F5A),
                                           onChanged: (val) {
                                             dialogSetState(() {
                                               autoGenerateKode = val;
@@ -2255,15 +2523,15 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                                   'Kode dikunci / dibuat otomatis oleh sistem',
                                               child: Icon(
                                                 Icons.lock_outline,
-                                                color: Color(0xFF2A9D8F),
+                                                color: Color(0xFF1A2F5A),
                                                 size: 18,
                                               ),
                                             )
                                           : null,
                                       filled: true,
                                       fillColor: isCodeLocked
-                                          ? const Color(0xFFEDF7F6)
-                                          : const Color(0xFFFFF8F4),
+                                          ? const Color(0xFFEFF3FC)
+                                          : const Color(0xFFF8FAFC),
                                     ),
                                     validator: (v) {
                                       if (v == null || v.trim().isEmpty) {
@@ -2339,7 +2607,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                               _sectionLabel(
                                   'Data Pengguna',
                                   Icons.person_outline_rounded,
-                                  const Color(0xFF2A9D8F)),
+                                  const Color(0xFFCFA836)),
                               const SizedBox(height: 10),
                               TextFormField(
                                 controller: namaUserController,
@@ -2385,7 +2653,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                               _sectionLabel(
                                   'Foto Barang',
                                   Icons.photo_camera_outlined,
-                                  const Color(0xFFE8776F)),
+                                  const Color(0xFF1A2F5A)),
                               const SizedBox(height: 10),
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -2459,7 +2727,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                     label: Text(
                                         isUploadingFoto ? 'Uploading...' : 'Pilih'),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF2A9D8F),
+                                      backgroundColor: const Color(0xFF1A2F5A),
                                       foregroundColor: Colors.white,
                                       shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(10)),
@@ -2474,7 +2742,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                             _sectionLabel(
                                 'Preview Kartu Aset',
                                 Icons.preview_outlined,
-                                const Color(0xFF2A9D8F)),
+                                const Color(0xFF1A2F5A)),
                             const SizedBox(height: 10),
                             livePreview,
                           ],
@@ -2637,7 +2905,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                     ? 'Simpan Perubahan'
                                     : 'Tambah Barang'),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFE8776F),
+                                  backgroundColor: const Color(0xFF1A2F5A),
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 20, vertical: 14),
@@ -2668,7 +2936,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                       Expanded(
                         child: Container(
                           decoration: const BoxDecoration(
-                            color: Color(0xFFFFF8F4),
+                            color: Color(0xFFEFF3FC),
                             borderRadius: BorderRadius.only(
                               topRight: Radius.circular(20),
                               bottomRight: Radius.circular(20),
@@ -2681,14 +2949,14 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                               Row(
                                 children: const [
                                   Icon(Icons.preview_outlined,
-                                      color: Color(0xFF2A9D8F), size: 20),
+                                      color: Color(0xFF1A2F5A), size: 20),
                                   SizedBox(width: 8),
                                   Text(
                                     'Preview Kartu Aset',
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w800,
-                                      color: Color(0xFF2A9D8F),
+                                      color: Color(0xFF1A2F5A),
                                     ),
                                   ),
                                 ],
@@ -2697,7 +2965,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                               const Text(
                                 'Tampilan real-time sesuai data yang diisi',
                                 style: TextStyle(
-                                    fontSize: 11, color: Color(0xFF888888)),
+                                    fontSize: 11, color: Color(0xFF4A5568)),
                               ),
                               const SizedBox(height: 16),
                               Expanded(
@@ -2798,16 +3066,23 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.meeting_room_outlined,
-                  color: Color(0xFFE8776F), size: 28),
-              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1A2F5A).withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.meeting_room_outlined,
+                    color: Color(0xFF1A2F5A), size: 24),
+              ),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   _room.name,
                   style: const TextStyle(
-                      fontSize: 22,
+                      fontSize: 20,
                       fontWeight: FontWeight.w900,
-                      color: Color(0xFF2C3E50)),
+                      color: Color(0xFF1A2F5A)),
                 ),
               ),
             ],
@@ -2822,23 +3097,30 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
           ),
           const Divider(height: 32, thickness: 1),
 
-          // Room QR card
+          // Room QR card (navy/gold theme)
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFFFFF8F0),
-              border: Border.all(color: const Color(0xFFFFE3D1), width: 1.5),
+              color: const Color(0xFFEFF3FC),
+              border: Border.all(color: const Color(0xFF1A2F5A).withOpacity(0.2), width: 1.5),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
               children: [
-                const Text(
-                  'BARCODE RUANGAN',
-                  style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.0,
-                      color: Color(0xFFE8776F)),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1A2F5A).withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    'BARCODE RUANGAN',
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.0,
+                        color: Color(0xFF1A2F5A)),
+                  ),
                 ),
                 const SizedBox(height: 12),
                 QRCodeWidget(data: generateRoomUrl(_room.id), size: 140),
@@ -2848,18 +3130,18 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                   style: const TextStyle(
                       fontSize: 10,
                       fontFamily: 'monospace',
-                      color: Colors.black87),
+                      color: Color(0xFF1A2F5A)),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 TextButton.icon(
                   onPressed: () async => await printRoomLabelImpl(_room),
-                  icon: const Icon(Icons.print, size: 14, color: Color(0xFFE8776F)),
+                  icon: const Icon(Icons.print, size: 14, color: Color(0xFFCFA836)),
                   label: const Text(
                     'Cetak Label Ruangan',
                     style: TextStyle(
                         fontSize: 11,
-                        color: Color(0xFFE8776F),
+                        color: Color(0xFFCFA836),
                         fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -2868,17 +3150,33 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
           ),
           if (!isMobile) const Spacer(),
           if (isMobile) const SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: () => _showAddEditItemDialog(),
-            icon: const Icon(Icons.add, size: 20),
-            label: const Text('Tambah Barang'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2A9D8F),
-              foregroundColor: Colors.white,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+          Container(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1A2F5A), Color(0xFF2D4A8A)],
+              ),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF1A2F5A).withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ElevatedButton.icon(
+              onPressed: () => _showAddEditItemDialog(),
+              icon: const Icon(Icons.add, size: 20),
+              label: const Text('Tambah Barang', style: TextStyle(fontWeight: FontWeight.w700)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                foregroundColor: Colors.white,
+                shadowColor: Colors.transparent,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
             ),
           ),
         ],
@@ -2914,7 +3212,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                     Row(
                       children: [
                         const Icon(Icons.inventory_2_outlined,
-                            color: Color(0xFF2A9D8F), size: 24),
+                            color: Color(0xFF1A2F5A), size: 24),
                         const SizedBox(width: 8),
                         const Expanded(
                           child: Text(
@@ -2922,7 +3220,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                             style: TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.w900,
-                                color: Colors.black),
+                                color: Color(0xFF1A2F5A)),
                           ),
                         ),
                       ],
@@ -2931,7 +3229,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                     Text(
                       'Menampilkan ${_room.items.length} barang terdaftar',
                       style: const TextStyle(
-                          color: Colors.black87,
+                          color: Color(0xFF4A5568),
                           fontSize: 13,
                           fontWeight: FontWeight.w600),
                     ),
@@ -2958,27 +3256,37 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                     children: [
                       Icon(Icons.inventory_2_outlined,
                           size: 70,
-                          color: const Color(0xFFE8776F).withOpacity(0.5)),
+                          color: const Color(0xFF1A2F5A).withOpacity(0.2)),
                       const SizedBox(height: 16),
                       const Text(
                         'Belum ada barang di ruangan ini',
                         style: TextStyle(
                             fontSize: 16,
-                            color: Color(0xFF2C3E50),
+                            color: Color(0xFF1A2F5A),
                             fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 12),
-                      ElevatedButton.icon(
-                        onPressed: () => _showAddEditItemDialog(),
-                        icon: const Icon(Icons.add),
-                        label: const Text('Tambahkan Barang Pertama'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2A9D8F),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 12),
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF1A2F5A), Color(0xFF2D4A8A)],
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: ElevatedButton.icon(
+                          onPressed: () => _showAddEditItemDialog(),
+                          icon: const Icon(Icons.add),
+                          label: const Text('Tambahkan Barang Pertama'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            foregroundColor: Colors.white,
+                            shadowColor: Colors.transparent,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 12),
+                          ),
                         ),
                       ),
                     ],
@@ -2998,9 +3306,9 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                   final barcodePanel = Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFF8F0),
+                      color: const Color(0xFFEFF3FC),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFFFE3D1)),
+                      border: Border.all(color: const Color(0xFF1A2F5A).withOpacity(0.18)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -3012,12 +3320,19 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                           children: [
                             Column(
                               children: [
-                                const Text(
-                                  'BARCODE BARANG',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFFE8776F),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF1A2F5A).withOpacity(0.08),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: const Text(
+                                    'BARCODE BARANG',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1A2F5A),
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 6),
@@ -3031,12 +3346,19 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                             const SizedBox(width: 20),
                             Column(
                               children: [
-                                const Text(
-                                  'QR SCAN HP',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF2A9D8F),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFCFA836).withOpacity(0.12),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: const Text(
+                                    'QR SCAN HP',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFFCFA836),
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 6),
@@ -3053,7 +3375,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                           'Kode: ${item.kodeBarang}',
                           style: const TextStyle(
                               fontSize: 10,
-                              color: Color(0xFF555555),
+                              color: Color(0xFF1A2F5A),
                               fontFamily: 'monospace',
                               fontWeight: FontWeight.w600),
                           textAlign: TextAlign.center,
@@ -3062,12 +3384,12 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                         TextButton.icon(
                           onPressed: () async => await printItemLabelImpl(item, _room),
                           icon: const Icon(Icons.print, size: 14,
-                              color: Color(0xFF2A9D8F)),
+                              color: Color(0xFFCFA836)),
                           label: const Text(
                             'Cetak Label Barang',
                             style: TextStyle(
                                 fontSize: 11,
-                                color: Color(0xFF2A9D8F),
+                                color: Color(0xFFCFA836),
                                 fontWeight: FontWeight.bold),
                           ),
                         ),
@@ -3091,12 +3413,16 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Title & Action bar of asset card container
+                        // Title & Action bar of asset card container (navy theme)
                         Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 20, vertical: 12),
                           decoration: const BoxDecoration(
-                            color: Color(0xFF2A9D8F), // warm teal header
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Color(0xFF1A2F5A), Color(0xFF1E3A6E)],
+                            ),
                             borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(16),
                               topRight: Radius.circular(16),
@@ -3133,32 +3459,105 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                     onPressed: () async {
                                       final confirm = await showDialog<bool>(
                                         context: context,
-                                        builder: (ctx) => AlertDialog(
+                                        builder: (ctx) => Dialog(
                                           shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(16)),
-                                          title: const Text('Hapus Barang?',
-                                              style: TextStyle(fontWeight: FontWeight.bold)),
-                                          content: Text(
-                                              'Barang "${item.jenisBarang} - ${item.merekModel}" akan dihapus permanen dari sistem dan database. Yakin?'),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () => Navigator.pop(ctx, false),
-                                              child: const Text('Batal'),
+                                              borderRadius: BorderRadius.circular(20)),
+                                          child: Container(
+                                            constraints: const BoxConstraints(maxWidth: 340),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                // Header
+                                                Container(
+                                                  width: double.infinity,
+                                                  padding: const EdgeInsets.all(18),
+                                                  decoration: const BoxDecoration(
+                                                    gradient: LinearGradient(
+                                                      colors: [Color(0xFF1A2F5A), Color(0xFF1E3A6E)],
+                                                    ),
+                                                    borderRadius: BorderRadius.only(
+                                                      topLeft: Radius.circular(20),
+                                                      topRight: Radius.circular(20),
+                                                    ),
+                                                  ),
+                                                  child: Row(
+                                                    children: [
+                                                      Container(
+                                                        padding: const EdgeInsets.all(6),
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.red.withOpacity(0.25),
+                                                          borderRadius: BorderRadius.circular(8),
+                                                        ),
+                                                        child: const Icon(Icons.delete_outline_rounded,
+                                                            color: Color(0xFFFF8A80), size: 18),
+                                                      ),
+                                                      const SizedBox(width: 10),
+                                                      const Text(
+                                                        'Hapus Barang?',
+                                                        style: TextStyle(
+                                                          fontSize: 16,
+                                                          fontWeight: FontWeight.bold,
+                                                          color: Colors.white,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                // Content
+                                                Padding(
+                                                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        'Barang "${item.jenisBarang} - ${item.merekModel}" akan dihapus permanen dari sistem dan database. Yakin?',
+                                                        style: const TextStyle(
+                                                          fontSize: 13,
+                                                          color: Color(0xFF4A5568),
+                                                          height: 1.4,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 20),
+                                                      Row(
+                                                        mainAxisAlignment: MainAxisAlignment.end,
+                                                        children: [
+                                                          OutlinedButton(
+                                                            onPressed: () => Navigator.pop(ctx, false),
+                                                            style: OutlinedButton.styleFrom(
+                                                              side: const BorderSide(color: Color(0xFFD0D8E8)),
+                                                              foregroundColor: const Color(0xFF4A5568),
+                                                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                            ),
+                                                            child: const Text('Batal', style: TextStyle(fontWeight: FontWeight.w600)),
+                                                          ),
+                                                          const SizedBox(width: 10),
+                                                          ElevatedButton.icon(
+                                                            style: ElevatedButton.styleFrom(
+                                                              backgroundColor: const Color(0xFFC0392B),
+                                                              foregroundColor: Colors.white,
+                                                              elevation: 0,
+                                                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                            ),
+                                                            onPressed: () => Navigator.pop(ctx, true),
+                                                            icon: const Icon(Icons.delete_outline, size: 16),
+                                                            label: const Text('Hapus', style: TextStyle(fontWeight: FontWeight.bold)),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
                                             ),
-                                            ElevatedButton(
-                                              style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.red,
-                                                  foregroundColor: Colors.white),
-                                              onPressed: () => Navigator.pop(ctx, true),
-                                              child: const Text('Hapus'),
-                                            ),
-                                          ],
+                                          ),
                                         ),
                                       );
                                       if (confirm == true) _deleteItem(item);
                                     },
                                     icon: const Icon(Icons.delete,
-                                        color: Color(0xFFFFF0F0), size: 18),
+                                        color: Color(0xFFFF8A80), size: 18),
                                     tooltip: 'Hapus Barang',
                                   ),
                                 ],
@@ -3202,7 +3601,16 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF111111),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF1A2F5A), Color(0xFF1E3A6E)],
+            ),
+          ),
+        ),
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         title: Text(
           'Detail Ruangan: ${_room.name}',
@@ -3218,7 +3626,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
               fit: BoxFit.cover,
             ),
           ),
-          // Gradient overlay
+          // Gradient overlay konsisten dengan login (navy)
           Positioned.fill(
             child: DecoratedBox(
               decoration: BoxDecoration(
@@ -3226,9 +3634,9 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    const Color(0xFFFFF8F0).withOpacity(0.4),
-                    const Color(0xFFE8776F).withOpacity(0.2),
-                    const Color(0xFF2A9D8F).withOpacity(0.2),
+                    const Color(0xFFF5F7FA).withOpacity(0.6),
+                    const Color(0xFFEDF2FB).withOpacity(0.72),
+                    const Color(0xFFEAEEF8).withOpacity(0.80),
                   ],
                   stops: const [0.0, 0.5, 1.0],
                 ),
@@ -3324,9 +3732,18 @@ class PublicRoomScreen extends StatelessWidget {
     final groupedItems = groupedMap.values.toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9FB),
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF111111),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF1A2F5A), Color(0xFF1E3A6E)],
+            ),
+          ),
+        ),
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         title: Text('GENSET Ruangan: ${room.name}'),
       ),
@@ -3342,7 +3759,14 @@ class PublicRoomScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey[200]!),
+                  border: Border.all(color: const Color(0xFFD0D8E8)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF1A2F5A).withOpacity(0.06),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
@@ -3355,13 +3779,13 @@ class PublicRoomScreen extends StatelessWidget {
                             style: const TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.w900,
-                                color: Color(0xFF111111)),
+                                color: Color(0xFF1A2F5A)),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             'Tahun Registrasi Ruang: ${room.year}',
                             style: const TextStyle(
-                                color: Color(0xFF555555),
+                                color: Color(0xFF4A5568),
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500),
                           ),
@@ -3381,12 +3805,12 @@ class PublicRoomScreen extends StatelessWidget {
                     style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF111111)),
+                        color: Color(0xFF1A2F5A)),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFC9E12C).withOpacity(0.2),
+                      color: const Color(0xFF1A2F5A).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -3394,7 +3818,7 @@ class PublicRoomScreen extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF111111),
+                        color: Color(0xFF1A2F5A),
                       ),
                     ),
                   ),
@@ -3578,9 +4002,18 @@ class PublicItemScreen extends StatelessWidget {
     final itemsToDisplay = matchingItems.isEmpty ? [item] : matchingItems;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9FB),
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF111111),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF1A2F5A), Color(0xFF1E3A6E)],
+            ),
+          ),
+        ),
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -3704,9 +4137,18 @@ class PublicItemListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9FB),
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF111111),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF1A2F5A), Color(0xFF1E3A6E)],
+            ),
+          ),
+        ),
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         title: const Text('Daftar Aset Terdeteksi'),
         leading: IconButton(
@@ -3794,7 +4236,7 @@ class PublicItemListScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2A9D8F).withOpacity(0.15),
+                      color: const Color(0xFF1A2F5A).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -3802,7 +4244,7 @@ class PublicItemListScreen extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF2D6A4F),
+                        color: Color(0xFF1A2F5A),
                       ),
                     ),
                   ),
@@ -3914,7 +4356,7 @@ class PublicItemListScreen extends StatelessWidget {
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 8, vertical: 2),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFE8776F).withOpacity(0.1),
+                                          color: const Color(0xFF1A2F5A).withOpacity(0.08),
                                           borderRadius: BorderRadius.circular(6),
                                         ),
                                         child: Text(
@@ -3922,7 +4364,7 @@ class PublicItemListScreen extends StatelessWidget {
                                           style: const TextStyle(
                                             fontSize: 11,
                                             fontWeight: FontWeight.w600,
-                                            color: Color(0xFFC04037),
+                                            color: Color(0xFF1A2F5A),
                                           ),
                                         ),
                                       ),
