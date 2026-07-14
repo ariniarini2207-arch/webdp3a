@@ -2018,7 +2018,106 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                             tooltip: 'Edit Ruangan',
                                           ),
                                           IconButton(
-                                            onPressed: () => _deleteRoom(room),
+                                            onPressed: () async {
+                                              final confirm = await showDialog<bool>(
+                                                context: context,
+                                                builder: (ctx) => Dialog(
+                                                  shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(20)),
+                                                  child: Container(
+                                                    constraints: const BoxConstraints(maxWidth: 340),
+                                                    child: Column(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        // Header
+                                                        Container(
+                                                          width: double.infinity,
+                                                          padding: const EdgeInsets.all(18),
+                                                          decoration: const BoxDecoration(
+                                                            gradient: LinearGradient(
+                                                              colors: [Color(0xFF1A2F5A), Color(0xFF1E3A6E)],
+                                                            ),
+                                                            borderRadius: BorderRadius.only(
+                                                              topLeft: Radius.circular(20),
+                                                              topRight: Radius.circular(20),
+                                                            ),
+                                                          ),
+                                                          child: Row(
+                                                            children: [
+                                                              Container(
+                                                                padding: const EdgeInsets.all(6),
+                                                                decoration: BoxDecoration(
+                                                                  color: Colors.red.withOpacity(0.25),
+                                                                  borderRadius: BorderRadius.circular(8),
+                                                                ),
+                                                                child: const Icon(Icons.delete_outline_rounded,
+                                                                    color: Color(0xFFFF8A80), size: 18),
+                                                              ),
+                                                              const SizedBox(width: 10),
+                                                              const Text(
+                                                                'Hapus Ruangan?',
+                                                                style: TextStyle(
+                                                                  fontSize: 16,
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.white,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                        // Content
+                                                        Padding(
+                                                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                                                          child: Column(
+                                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                                            children: [
+                                                              Text(
+                                                                'Ruangan "${room.name}" beserta seluruh aset di dalamnya akan dihapus permanen dari sistem. Yakin?',
+                                                                style: const TextStyle(
+                                                                  fontSize: 13,
+                                                                  color: Color(0xFF4A5568),
+                                                                  height: 1.4,
+                                                                ),
+                                                              ),
+                                                              const SizedBox(height: 20),
+                                                              Row(
+                                                                mainAxisAlignment: MainAxisAlignment.end,
+                                                                children: [
+                                                                  OutlinedButton(
+                                                                    onPressed: () => Navigator.pop(ctx, false),
+                                                                    style: OutlinedButton.styleFrom(
+                                                                      side: const BorderSide(color: Color(0xFFD0D8E8)),
+                                                                      foregroundColor: const Color(0xFF4A5568),
+                                                                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                                    ),
+                                                                    child: const Text('Batal', style: TextStyle(fontWeight: FontWeight.w600)),
+                                                                  ),
+                                                                  const SizedBox(width: 10),
+                                                                  ElevatedButton.icon(
+                                                                    style: ElevatedButton.styleFrom(
+                                                                      backgroundColor: const Color(0xFFC0392B),
+                                                                      foregroundColor: Colors.white,
+                                                                      elevation: 0,
+                                                                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                                    ),
+                                                                    onPressed: () => Navigator.pop(ctx, true),
+                                                                    icon: const Icon(Icons.delete_outline, size: 16),
+                                                                    label: const Text('Hapus', style: TextStyle(fontWeight: FontWeight.bold)),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                              if (confirm == true) _deleteRoom(room);
+                                            },
                                             icon: const Icon(Icons.delete_outline,
                                                 color: Color(0xFFC0392B)),
                                             tooltip: 'Hapus Ruangan',
