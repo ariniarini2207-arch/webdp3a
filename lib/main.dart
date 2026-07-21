@@ -173,7 +173,8 @@ class _MainAppControllerState extends State<MainAppController> {
             barcode: itemData['barcode'] ?? '',
             tahunPerolehan: itemData['tahun_perolehan'] ?? '',
           );
-        }).toList();
+        }).toList()
+          ..sort((a, b) => b.id.compareTo(a.id));
 
         loadedRooms.add(Room(
           id: roomId,
@@ -1514,7 +1515,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       }
                                     }
 
-                                    onRoomsChanged([...rooms, newRoom]);
+                                    onRoomsChanged([newRoom, ...rooms]);
                                     Navigator.pop(context);
                                   }
                                 },
