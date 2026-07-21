@@ -2767,7 +2767,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: Text(
-                                              'Aset terdaftar di "${matchedRoom!.name}". Menyimpan akan memindahkan aset tersebut ke ruangan ini.',
+                                              'Kode aset ini juga terdaftar di "${matchedRoom!.name}". Menyimpan akan menambahkan aset baru di ruangan ini tanpa memindahkan aset dari "${matchedRoom!.name}".',
                                               style: const TextStyle(
                                                 fontSize: 11,
                                                 color: Color(0xFF856404),
@@ -2970,97 +2970,83 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                       }
                                    }
                                   if (formKey.currentState!.validate()) {
-                                    // isMoving hanya true jika kode dimasukkan MANUAL (bukan auto-generate)
-                                    // agar barang dengan jenis/merek sama tidak otomatis dipindah/deduplikasi
-                                    final bool isMoving = !isEditing && !autoGenerateKode && matchedItem != null;
-                                    final newItem = Item(
-                                      id: isEditing
-                                          ? itemToEdit.id
-                                          : (isMoving
-                                              ? matchedItem!.id
-                                              : 'item-${DateTime.now().millisecondsSinceEpoch}'),
-                                      jenisBarang: jenisController.text,
-                                      merekModel: merekController.text,
-                                      barcode: kodeController.text, // auto-generated from kodeBarang
-                                      kodeBarang: kodeController.text,
-                                      namaPengguna: namaUserController.text,
-                                      nipPengguna: nipUserController.text,
-                                      teleponPengguna: telpUserController.text,
-                                      fotoUrl: fotoController.text,
-                                      tahunPerolehan: tahunPerolehanController.text,
-                                    );
+                                     final newItem = Item(
+                                       id: isEditing
+                                           ? itemToEdit.id
+                                           : 'item-${DateTime.now().millisecondsSinceEpoch}',
+                                       jenisBarang: jenisController.text,
+                                       merekModel: merekController.text,
+                                       barcode: kodeController.text, // auto-generated from kodeBarang
+                                       kodeBarang: kodeController.text,
+                                       namaPengguna: namaUserController.text,
+                                       nipPengguna: nipUserController.text,
+                                       teleponPengguna: telpUserController.text,
+                                       fotoUrl: fotoController.text,
+                                       tahunPerolehan: tahunPerolehanController.text,
+                                     );
 
-                                    bool saveSuccess = true;
-                                    String? dbError;
+                                     bool saveSuccess = true;
+                                     String? dbError;
 
-                                    if (isSupabaseConfigured) {
-                                      try {
-                                        if (isEditing || isMoving) {
-                                           await Supabase.instance.client
-                                               .from('items')
-                                               .update({
-                                                 'room_id': _room.id,
-                                                 'jenis_barang': newItem.jenisBarang,
-                                                 'merek_model': newItem.merekModel,
-                                                 'kode_barang': newItem.kodeBarang,
-                                                 'nama_pengguna': newItem.namaPengguna,
-                                                 'nip_pengguna': newItem.nipPengguna,
-                                                 'telepon_pengguna': newItem.teleponPengguna,
-                                                 'foto_url': newItem.fotoUrl,
-                                                 'barcode': newItem.barcode,
-                                                 'tahun_perolehan': newItem.tahunPerolehan,
-                                               })
-                                               .eq('id', newItem.id);
-                                         } else {
-                                           await Supabase.instance.client
-                                               .from('items')
-                                               .insert({
-                                                 'id': newItem.id,
-                                                 'room_id': _room.id,
-                                                 'jenis_barang': newItem.jenisBarang,
-                                                 'merek_model': newItem.merekModel,
-                                                 'kode_barang': newItem.kodeBarang,
-                                                 'nama_pengguna': newItem.namaPengguna,
-                                                 'nip_pengguna': newItem.nipPengguna,
-                                                 'telepon_pengguna': newItem.teleponPengguna,
-                                                 'foto_url': newItem.fotoUrl,
-                                                 'barcode': newItem.barcode,
-                                                 'tahun_perolehan': newItem.tahunPerolehan,
-                                               });
-                                         }
-                                      } catch (e) {
-                                        saveSuccess = false;
-                                        dbError = e.toString();
-                                        debugPrint('Supabase Item Add/Edit Error: $e');
-                                      }
-                                    }
-
-                                    if (saveSuccess) {
-                                      setState(() {
-                                        // Buat copy global dari list ruangan
-                                        final List<Room> updatedRooms = _allRooms.map((r) {
-                                          // 1. Jika ini adalah ruangan asal barang yang dipindah
-                                          if (isMoving && r.id == matchedRoom!.id) {
-                                            return r.copyWith(
-                                              items: r.items.where((i) => i.id != matchedItem!.id).toList(),
-                                            );
+                                     if (isSupabaseConfigured) {
+                                       try {
+                                         if (isEditing) {
+                                            await Supabase.instance.client
+                                                .from('items')
+                                                .update({
+                                                  'room_id': _room.id,
+                                                  'jenis_barang': newItem.jenisBarang,
+                                                  'merek_model': newItem.merekModel,
+                                                  'kode_barang': newItem.kodeBarang,
+                                                  'nama_pengguna': newItem.namaPengguna,
+                                                  'nip_pengguna': newItem.nipPengguna,
+                                                  'telepon_pengguna': newItem.teleponPengguna,
+                                                  'foto_url': newItem.fotoUrl,
+                                                  'barcode': newItem.barcode,
+                                                  'tahun_perolehan': newItem.tahunPerolehan,
+                                                })
+                                                .eq('id', newItem.id);
+                                          } else {
+                                            await Supabase.instance.client
+                                                .from('items')
+                                                .insert({
+                                                  'id': newItem.id,
+                                                  'room_id': _room.id,
+                                                  'jenis_barang': newItem.jenisBarang,
+                                                  'merek_model': newItem.merekModel,
+                                                  'kode_barang': newItem.kodeBarang,
+                                                  'nama_pengguna': newItem.namaPengguna,
+                                                  'nip_pengguna': newItem.nipPengguna,
+                                                  'telepon_pengguna': newItem.teleponPengguna,
+                                                  'foto_url': newItem.fotoUrl,
+                                                  'barcode': newItem.barcode,
+                                                  'tahun_perolehan': newItem.tahunPerolehan,
+                                                });
                                           }
-                                          // 2. Jika ini adalah ruangan saat ini (tujuan)
-                                          if (r.id == _room.id) {
-                                            List<Item> newItemsList;
-                                            if (isEditing) {
-                                              newItemsList = r.items
-                                                  .map((i) => i.id == itemToEdit.id ? newItem : i)
-                                                  .toList();
-                                            } else {
-                                              // Jika dipindah, keluarkan dulu versi lamanya dari ruangan ini (antisipasi)
-                                              newItemsList = r.items.where((i) => i.id != newItem.id).toList();
-                                              newItemsList.add(newItem);
-                                            }
-                                            return r.copyWith(items: newItemsList);
-                                          }
-                                          return r;
-                                        }).toList();
+                                       } catch (e) {
+                                         saveSuccess = false;
+                                         dbError = e.toString();
+                                         debugPrint('Supabase Item Add/Edit Error: $e');
+                                       }
+                                     }
+
+                                     if (saveSuccess) {
+                                       setState(() {
+                                         // Buat copy global dari list ruangan
+                                         final List<Room> updatedRooms = _allRooms.map((r) {
+                                           if (r.id == _room.id) {
+                                             List<Item> newItemsList;
+                                             if (isEditing) {
+                                               newItemsList = r.items
+                                                   .map((i) => i.id == itemToEdit.id ? newItem : i)
+                                                   .toList();
+                                             } else {
+                                               newItemsList = List<Item>.from(r.items)..add(newItem);
+                                             }
+                                             return r.copyWith(items: newItemsList);
+                                           }
+                                           return r;
+                                         }).toList();
 
                                         // Perbarui state lokal _room agar UI detail ruangan ini langsung update
                                         _allRooms = updatedRooms;
