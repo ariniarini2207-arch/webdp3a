@@ -2285,15 +2285,11 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
     final merekController =
         TextEditingController(text: itemToEdit?.merekModel ?? '');
 
-    // Kode barang selalu auto-generate (berlaku untuk tambah & edit)
-    // User bisa matikan toggle jika ingin input manual
-    bool autoGenerateKode = true;
-    final initialKode = isEditing
-        ? (itemToEdit.kodeBarang.isNotEmpty
-            ? itemToEdit.kodeBarang
-            : _generateNextKodeBarang())
-        : _generateNextKodeBarang();
-    final kodeController = TextEditingController(text: initialKode);
+    // Kode barang otomatis dinonaktifkan secara default
+    // User dapat mengeklik switch/bundaran untuk mengaktifkan & menggenerate kode otomatis
+    bool autoGenerateKode = false;
+    final kodeController = TextEditingController(
+        text: isEditing ? (itemToEdit?.kodeBarang ?? '') : '');
 
     final namaUserController =
         TextEditingController(text: itemToEdit?.namaPengguna ?? '');
@@ -2666,11 +2662,9 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                             dialogSetState(() {
                                               autoGenerateKode = val;
                                               if (val) {
-                                                if (kodeController.text.trim().isEmpty) {
-                                                  kodeController.text = isEditing && itemToEdit != null && itemToEdit!.kodeBarang.isNotEmpty
-                                                      ? itemToEdit!.kodeBarang
-                                                      : _generateNextKodeBarang();
-                                                }
+                                                kodeController.text = (isEditing && itemToEdit != null && itemToEdit!.kodeBarang.isNotEmpty)
+                                                    ? itemToEdit!.kodeBarang
+                                                    : _generateNextKodeBarang();
                                                 updateKodeBarang();
                                               } else {
                                                 if (!isEditing) {
