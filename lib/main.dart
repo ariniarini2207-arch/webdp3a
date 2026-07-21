@@ -2288,8 +2288,12 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
     // Kode barang selalu auto-generate (berlaku untuk tambah & edit)
     // User bisa matikan toggle jika ingin input manual
     bool autoGenerateKode = true;
-    final kodeController = TextEditingController(
-        text: isEditing ? itemToEdit.kodeBarang : '');
+    final initialKode = isEditing
+        ? (itemToEdit.kodeBarang.isNotEmpty
+            ? itemToEdit.kodeBarang
+            : _generateNextKodeBarang())
+        : _generateNextKodeBarang();
+    final kodeController = TextEditingController(text: initialKode);
 
     final namaUserController =
         TextEditingController(text: itemToEdit?.namaPengguna ?? '');
@@ -2358,12 +2362,6 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
       final nip = nipUserController.text.trim();
       final telp = telpUserController.text.trim();
 
-      // Kode hanya di-generate setelah jenis, merek, dan nama terisi
-      if (jenis.isEmpty || merek.isEmpty || nama.isEmpty) {
-        kodeController.text = '';
-        return;
-      }
-
       // Cari barang dengan semua data yang sama (kecuali foto)
       final matched = findItemByAllData(jenis, merek, nama, nip, telp);
       if (matched != null) {
@@ -2379,12 +2377,15 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
           final samaTelp = telp == itemToEdit.teleponPengguna.trim();
           if (sameJenis && sameMerek && samaNama && samaNip && samaTelp) {
             // Data tidak berubah — pakai kode lama
-            kodeController.text = itemToEdit.kodeBarang;
+            kodeController.text = itemToEdit.kodeBarang.isNotEmpty
+                ? itemToEdit.kodeBarang
+                : _generateNextKodeBarang();
             return;
           }
         }
-        // Data baru / berbeda — generate kode urut berikutnya
-        kodeController.text = _generateNextKodeBarang();
+        if (kodeController.text.trim().isEmpty) {
+          kodeController.text = _generateNextKodeBarang();
+        }
       }
     }
 
@@ -2665,6 +2666,11 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                             dialogSetState(() {
                                               autoGenerateKode = val;
                                               if (val) {
+                                                if (kodeController.text.trim().isEmpty) {
+                                                  kodeController.text = isEditing && itemToEdit != null && itemToEdit!.kodeBarang.isNotEmpty
+                                                      ? itemToEdit!.kodeBarang
+                                                      : _generateNextKodeBarang();
+                                                }
                                                 updateKodeBarang();
                                               } else {
                                                 if (!isEditing) {
@@ -2683,6 +2689,10 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                   TextFormField(
                                     controller: kodeController,
                                     readOnly: isCodeLocked,
+                                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                                    ],
                                     style: TextStyle(
                                       color: isCodeLocked
                                           ? const Color(0xFF555555)
@@ -2692,7 +2702,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                       performAutofillLookup(val, dialogSetState);
                                     },
                                     decoration: themedInput(
-                                      'Kode Barang',
+                                      'Kode Barang (Hanya angka & titik)',
                                       Icons.qr_code_outlined,
                                     ).copyWith(
                                       suffixIcon: isCodeLocked
