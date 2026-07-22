@@ -2550,10 +2550,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
               return LayoutBuilder(
                 builder: (context, constraints) {
                   final isWide = constraints.maxWidth >= 760;
-                  final isCodeLocked = autoGenerateKode ||
-                      findItemByModel(
-                              jenisController.text, merekController.text) !=
-                          null;
+                  final isCodeLocked = autoGenerateKode;
 
                   Widget livePreview = AnimatedBuilder(
                     animation: Listenable.merge([
@@ -2815,13 +2812,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                       final currentJenis = jenisController.text.trim();
                                       final currentMerek = merekController.text.trim();
 
-                                      // 1. Cek apakah ada item lain dengan jenis & merek yang sama
-                                      final matchedModel = findItemByModel(currentJenis, currentMerek);
-                                      if (matchedModel != null) {
-                                        if (matchedModel.kodeBarang.trim() != trimmedVal) {
-                                          return 'Jenis & merek ini sudah ada dengan kode "${matchedModel.kodeBarang}". Kode harus sama!';
-                                        }
-                                      }
+
 
                                       // 2. Cek apakah kode ini sudah digunakan oleh barang dengan jenis/merek lain
                                       Item? sameCodeItem;
@@ -3035,35 +3026,6 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                   if (isSaving) return;
                                   dialogSetState(() => isSaving = true);
                                   try {
-                                   if (!isEditing && kodeController.text.trim().isNotEmpty) {
-                                     final val = kodeController.text.trim();
-                                     Item? foundItem;
-                                     Room? foundRoom;
-                                     for (var r in _allRooms) {
-                                       for (var i in r.items) {
-                                         if (i.kodeBarang.trim() == val) {
-                                           foundItem = i;
-                                           foundRoom = r;
-                                           break;
-                                         }
-                                       }
-                                       if (foundItem != null) break;
-                                     }
-                                     if (foundItem != null) {
-                                        final nonNullItem = foundItem;
-                                        dialogSetState(() {
-                                          matchedItem = nonNullItem;
-                                          matchedRoom = foundRoom;
-                                          jenisController.text = nonNullItem.jenisBarang;
-                                          merekController.text = nonNullItem.merekModel;
-                                          namaUserController.text = nonNullItem.namaPengguna;
-                                          nipUserController.text = nonNullItem.nipPengguna;
-                                          telpUserController.text = nonNullItem.teleponPengguna;
-                                          fotoController.text = nonNullItem.fotoUrl;
-                                          tahunPerolehanController.text = nonNullItem.tahunPerolehan;
-                                        });
-                                      }
-                                   }
                                   if (formKey.currentState!.validate()) {
                                      final newItem = Item(
                                        id: isEditing
