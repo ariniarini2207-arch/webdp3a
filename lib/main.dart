@@ -267,22 +267,23 @@ class _MainAppControllerState extends State<MainAppController> {
 
     final cleanedText = scannedText.trim();
 
-    // Cari item berdasarkan kodeBarang atau barcode
+    // Cari item berdasarkan ID unik saja (agar scan hanya tampilkan 1 barang)
     bool hasItemMatch = false;
+    String? matchedItemId;
     for (var r in _rooms) {
       for (var i in r.items) {
-        if (i.kodeBarang.trim() == cleanedText ||
-            i.barcode.trim() == cleanedText ||
-            i.id.trim() == cleanedText) {
+        if (i.id.trim() == cleanedText ||
+            i.barcode.trim() == cleanedText) {
           hasItemMatch = true;
+          matchedItemId = i.id;
           break;
         }
       }
       if (hasItemMatch) break;
     }
 
-    if (hasItemMatch) {
-      setPublicItemId(cleanedText);
+    if (hasItemMatch && matchedItemId != null) {
+      setPublicItemId(matchedItemId);
       setPublicRoomId(null);
       setState(() {
         _selectedItemId = null;
@@ -390,14 +391,12 @@ class _MainAppControllerState extends State<MainAppController> {
       );
     }
 
-    // 1. Check Public Item View Route
+    // 1. Check Public Item View Route — cari hanya berdasarkan ID unik
     if (_publicItemId != null) {
       final List<MapEntry<Item, Room>> matchedItems = [];
       for (var r in _rooms) {
         for (var i in r.items) {
-          if (i.id == _publicItemId ||
-              i.kodeBarang.trim() == _publicItemId!.trim() ||
-              i.barcode.trim() == _publicItemId!.trim()) {
+          if (i.id == _publicItemId || i.barcode.trim() == _publicItemId!.trim()) {
             matchedItems.add(MapEntry(i, r));
           }
         }
@@ -3056,13 +3055,14 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                   dialogSetState(() => isSaving = true);
                                   try {
                                   if (formKey.currentState!.validate()) {
+                                     final newItemId = isEditing
+                                         ? itemToEdit.id
+                                         : 'item-${DateTime.now().millisecondsSinceEpoch}';
                                      final newItem = Item(
-                                       id: isEditing
-                                           ? itemToEdit.id
-                                           : 'item-${DateTime.now().millisecondsSinceEpoch}',
+                                       id: newItemId,
                                        jenisBarang: jenisController.text,
                                        merekModel: merekController.text,
-                                       barcode: kodeController.text, // auto-generated from kodeBarang
+                                       barcode: newItemId, // barcode = item ID unik agar scan hanya tampilkan 1 barang
                                        kodeBarang: kodeController.text,
                                        noRegister: noRegisterController.text,
                                        kondisiAset: selectedKondisiAset,
@@ -3671,7 +3671,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                 ),
                                 const SizedBox(height: 6),
                                 BarcodeWidget(
-                                  data: item.kodeBarang,
+                                  data: item.id, // ID unik agar scan hanya tampilkan barang ini
                                   width: 150,
                                   height: 55,
                                 ),
