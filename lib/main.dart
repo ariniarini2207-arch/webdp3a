@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'models.dart';
@@ -30,6 +31,16 @@ String generateRoomUrl(String roomId) {
 
 String generateItemUrl(String itemId) {
   return '$kPublicBaseUrl/?item=$itemId';
+}
+
+/// Generate UUID v4 acak (tidak perlu package tambahan)
+String generateUuid() {
+  final random = Random.secure();
+  final bytes = List<int>.generate(16, (_) => random.nextInt(256));
+  bytes[6] = (bytes[6] & 0x0f) | 0x40; // version 4
+  bytes[8] = (bytes[8] & 0x3f) | 0x80; // variant
+  final hex = bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+  return '${hex.substring(0, 8)}-${hex.substring(8, 12)}-${hex.substring(12, 16)}-${hex.substring(16, 20)}-${hex.substring(20)}';
 }
 
 void main() async {
@@ -3057,12 +3068,12 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                   if (formKey.currentState!.validate()) {
                                      final newItemId = isEditing
                                          ? itemToEdit.id
-                                         : 'item-${DateTime.now().millisecondsSinceEpoch}';
+                                         : generateUuid(); // UUID acak unik per barang
                                      final newItem = Item(
                                        id: newItemId,
                                        jenisBarang: jenisController.text,
                                        merekModel: merekController.text,
-                                       barcode: newItemId, // barcode = item ID unik agar scan hanya tampilkan 1 barang
+                                       barcode: newItemId, // barcode = ID unik
                                        kodeBarang: kodeController.text,
                                        noRegister: noRegisterController.text,
                                        kondisiAset: selectedKondisiAset,
@@ -3652,32 +3663,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Column(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF1A2F5A).withOpacity(0.08),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: const Text(
-                                    'BARCODE BARANG',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF1A2F5A),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                BarcodeWidget(
-                                  data: item.id, // ID unik agar scan hanya tampilkan barang ini
-                                  width: 150,
-                                  height: 55,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(width: 20),
+                            // Hanya QR Code — ID unik tersembunyi di dalam QR, tidak ditampilkan ke kartu
                             Column(
                               children: [
                                 Container(
@@ -3698,7 +3684,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                 const SizedBox(height: 6),
                                 QRCodeWidget(
                                   data: generateItemUrl(item.id),
-                                  size: 55,
+                                  size: 80,
                                 ),
                               ],
                             ),
