@@ -91,6 +91,28 @@ class _MainAppControllerState extends State<MainAppController> {
   // Simulated database of rooms & items
   List<Room> _rooms = [];
 
+  void setPublicRoomId(String? roomId) {
+    setState(() {
+      _publicRoomId = roomId;
+    });
+    if (roomId != null) {
+      saveToStorage('public_room_id', roomId);
+    } else {
+      removeFromStorage('public_room_id');
+    }
+  }
+
+  void setPublicItemId(String? itemId) {
+    setState(() {
+      _publicItemId = itemId;
+    });
+    if (itemId != null) {
+      saveToStorage('public_item_id', itemId);
+    } else {
+      removeFromStorage('public_item_id');
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -108,6 +130,19 @@ class _MainAppControllerState extends State<MainAppController> {
       await _fetchDataFromSupabase();
     } else {
       _loadSampleData();
+    }
+
+    final savedPublicRoomId = getFromStorage('public_room_id');
+    final savedPublicItemId = getFromStorage('public_item_id');
+    if (_publicRoomId == null && savedPublicRoomId != null) {
+      setState(() {
+        _publicRoomId = savedPublicRoomId;
+      });
+    }
+    if (_publicItemId == null && savedPublicItemId != null) {
+      setState(() {
+        _publicItemId = savedPublicItemId;
+      });
     }
 
     if (loggedIn) {
@@ -202,13 +237,13 @@ class _MainAppControllerState extends State<MainAppController> {
   void _checkUrlRouting() {
     final queryParams = Uri.base.queryParameters;
     if (queryParams.containsKey('room')) {
-      setState(() {
-        _publicRoomId = queryParams['room'];
-      });
+      final rId = queryParams['room'];
+      setPublicRoomId(rId);
+      setPublicItemId(null);
     } else if (queryParams.containsKey('item')) {
-      setState(() {
-        _publicItemId = queryParams['item'];
-      });
+      final iId = queryParams['item'];
+      setPublicItemId(iId);
+      setPublicRoomId(null);
     }
   }
 
@@ -218,16 +253,12 @@ class _MainAppControllerState extends State<MainAppController> {
     if (uri != null && uri.host.isNotEmpty) {
       final queryParams = uri.queryParameters;
       if (queryParams.containsKey('room')) {
-        setState(() {
-          _publicRoomId = queryParams['room'];
-          _publicItemId = null;
-        });
+        setPublicRoomId(queryParams['room']);
+        setPublicItemId(null);
         return;
       } else if (queryParams.containsKey('item')) {
-        setState(() {
-          _publicItemId = queryParams['item'];
-          _publicRoomId = null;
-        });
+        setPublicItemId(queryParams['item']);
+        setPublicRoomId(null);
         return;
       }
     }
@@ -249,9 +280,9 @@ class _MainAppControllerState extends State<MainAppController> {
     }
 
     if (hasItemMatch) {
+      setPublicItemId(cleanedText);
+      setPublicRoomId(null);
       setState(() {
-        _publicItemId = cleanedText;
-        _publicRoomId = null;
         _selectedItemId = null;
       });
       return;
@@ -261,10 +292,8 @@ class _MainAppControllerState extends State<MainAppController> {
     for (var r in _rooms) {
       if (r.barcode.trim().toUpperCase() == cleanedText.toUpperCase() ||
           r.id.trim() == cleanedText) {
-        setState(() {
-          _publicRoomId = r.id;
-          _publicItemId = null;
-        });
+        setPublicRoomId(r.id);
+        setPublicItemId(null);
         return;
       }
     }
@@ -385,14 +414,16 @@ class _MainAppControllerState extends State<MainAppController> {
             item: selectedEntry.key,
             room: selectedEntry.value,
             onBack: () {
-              setState(() {
-                if (matchedItems.length > 1) {
+              if (matchedItems.length > 1) {
+                setState(() {
                   _selectedItemId = null;
-                } else {
-                  _publicItemId = null;
+                });
+              } else {
+                setPublicItemId(null);
+                setState(() {
                   _selectedItemId = null;
-                }
-              });
+                });
+              }
             },
           );
         }
@@ -402,8 +433,8 @@ class _MainAppControllerState extends State<MainAppController> {
             item: matchedItems.first.key,
             room: matchedItems.first.value,
             onBack: () {
+              setPublicItemId(null);
               setState(() {
-                _publicItemId = null;
                 _selectedItemId = null;
               });
             },
@@ -414,8 +445,8 @@ class _MainAppControllerState extends State<MainAppController> {
           scannedCode: _publicItemId!,
           matchedItems: matchedItems,
           onBack: () {
+            setPublicItemId(null);
             setState(() {
-              _publicItemId = null;
               _selectedItemId = null;
             });
           },
@@ -439,9 +470,9 @@ class _MainAppControllerState extends State<MainAppController> {
                 const SizedBox(height: 12),
                 ElevatedButton(
                   onPressed: () {
+                    setPublicItemId(null);
+                    setPublicRoomId(null);
                     setState(() {
-                      _publicItemId = null;
-                      _publicRoomId = null;
                       _selectedItemId = null;
                     });
                   },
@@ -460,15 +491,11 @@ class _MainAppControllerState extends State<MainAppController> {
         roomId: _publicRoomId!,
         rooms: _rooms,
         onBackToLogin: () {
-          setState(() {
-            _publicRoomId = null;
-            _publicItemId = null;
-          });
+          setPublicRoomId(null);
+          setPublicItemId(null);
         },
         onViewItem: (item) {
-          setState(() {
-            _publicItemId = item.id;
-          });
+          setPublicItemId(item.id);
         },
       );
     }
