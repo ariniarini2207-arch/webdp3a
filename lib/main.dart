@@ -97,6 +97,7 @@ class _MainAppControllerState extends State<MainAppController> {
   String? _publicRoomId;
   String? _publicItemId;
   String? _selectedItemId;
+  List<Item>? _selectedGroupItems;
 
 
   // Simulated database of rooms & items
@@ -481,15 +482,85 @@ class _MainAppControllerState extends State<MainAppController> {
 
     // 2. Check Public Room View Route
     if (_publicRoomId != null) {
+      // Jika user mengeklik 1 barang dari daftar kelompok
+      if (_selectedItemId != null) {
+        Item? selectedItem;
+        Room? selectedRoom;
+        for (var r in _rooms) {
+          for (var i in r.items) {
+            if (i.id == _selectedItemId) {
+              selectedItem = i;
+              selectedRoom = r;
+              break;
+            }
+          }
+          if (selectedItem != null) break;
+        }
+
+        if (selectedItem != null && selectedRoom != null) {
+          return PublicItemScreen(
+            item: selectedItem,
+            room: selectedRoom,
+            onBack: () {
+              setState(() {
+                _selectedItemId = null;
+              });
+            },
+          );
+        }
+      }
+
+      // Jika user mengeklik kelompok barang (misal 5 aset yang sama dalam 1 ruangan)
+      if (_selectedGroupItems != null && _selectedGroupItems!.isNotEmpty) {
+        final parentRoom = _rooms.firstWhere(
+          (r) => r.id == _publicRoomId,
+          orElse: () => _rooms.first,
+        );
+        final List<MapEntry<Item, Room>> matchedGroupEntries =
+            _selectedGroupItems!.map((item) => MapEntry(item, parentRoom)).toList();
+
+        return PublicItemListScreen(
+          scannedCode: '${_selectedGroupItems!.first.jenisBarang} (${_selectedGroupItems!.length} Unit)',
+          matchedItems: matchedGroupEntries,
+          onBack: () {
+            setState(() {
+              _selectedGroupItems = null;
+            });
+          },
+          onViewItem: (item) {
+            setState(() {
+              _selectedItemId = item.id;
+            });
+          },
+        );
+      }
+
       return PublicRoomScreen(
         roomId: _publicRoomId!,
         rooms: _rooms,
         onBackToLogin: () {
           setPublicRoomId(null);
           setPublicItemId(null);
+          setState(() {
+            _selectedGroupItems = null;
+            _selectedItemId = null;
+          });
         },
         onViewItem: (item) {
-          setPublicItemId(item.id);
+          setState(() {
+            _selectedItemId = item.id;
+          });
+        },
+        onViewGroup: (groupItems) {
+          if (groupItems.length == 1) {
+            setState(() {
+              _selectedItemId = groupItems.first.id;
+            });
+          } else {
+            setState(() {
+              _selectedGroupItems = groupItems;
+            });
+          }
         },
       );
     }
@@ -4021,6 +4092,7 @@ class PublicRoomScreen extends StatelessWidget {
   final List<Room> rooms;
   final VoidCallback onBackToLogin;
   final ValueChanged<Item> onViewItem;
+  final ValueChanged<List<Item>> onViewGroup;
 
   const PublicRoomScreen({
     Key? key,
@@ -4028,6 +4100,7 @@ class PublicRoomScreen extends StatelessWidget {
     required this.rooms,
     required this.onBackToLogin,
     required this.onViewItem,
+    required this.onViewGroup,
   }) : super(key: key);
 
   @override
@@ -4232,7 +4305,7 @@ class PublicRoomScreen extends StatelessWidget {
                               ),
                               trailing: const Icon(Icons.chevron_right,
                                   color: Colors.grey),
-                              onTap: () => onViewItem(item),
+                              onTap: () => onViewGroup(group),
                             ),
                           );
                         },
