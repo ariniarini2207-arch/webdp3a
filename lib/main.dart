@@ -95,10 +95,11 @@ class _MainAppControllerState extends State<MainAppController> {
     setState(() {
       _publicRoomId = roomId;
     });
+    // Gunakan sessionStorage agar direset saat tab ditutup / link dibuka ulang
     if (roomId != null) {
-      saveToStorage('public_room_id', roomId);
+      saveToSession('public_room_id', roomId);
     } else {
-      removeFromStorage('public_room_id');
+      removeFromSession('public_room_id');
     }
   }
 
@@ -106,10 +107,11 @@ class _MainAppControllerState extends State<MainAppController> {
     setState(() {
       _publicItemId = itemId;
     });
+    // Gunakan sessionStorage agar direset saat tab ditutup / link dibuka ulang
     if (itemId != null) {
-      saveToStorage('public_item_id', itemId);
+      saveToSession('public_item_id', itemId);
     } else {
-      removeFromStorage('public_item_id');
+      removeFromSession('public_item_id');
     }
   }
 
@@ -132,8 +134,9 @@ class _MainAppControllerState extends State<MainAppController> {
       _loadSampleData();
     }
 
-    final savedPublicRoomId = getFromStorage('public_room_id');
-    final savedPublicItemId = getFromStorage('public_item_id');
+    // Baca dari sessionStorage (hanya berlaku selama tab ini terbuka)
+    final savedPublicRoomId = getFromSession('public_room_id');
+    final savedPublicItemId = getFromSession('public_item_id');
     if (_publicRoomId == null && savedPublicRoomId != null) {
       setState(() {
         _publicRoomId = savedPublicRoomId;
@@ -2885,10 +2888,9 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                 controller: noRegisterController,
                                 decoration: themedInput(
                                     'No. Register Aset', Icons.app_registration_rounded),
+                                keyboardType: TextInputType.number,
                                 inputFormatters: [
-                                  FilteringTextInputFormatter.allow(
-                                    RegExp(r'[a-zA-Z0-9\s.\-\/]'),
-                                  ),
+                                  FilteringTextInputFormatter.digitsOnly,
                                 ],
                                 onChanged: (_) => dialogSetState(() => updateKodeBarang()),
                               ),
