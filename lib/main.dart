@@ -210,15 +210,23 @@ class _MainAppControllerState extends State<MainAppController> {
             .toList();
         
         final roomItems = roomItemsData.map((itemData) {
+          final itemId = itemData['id'] ?? '';
+          final kodeBarang = itemData['kode_barang'] ?? '';
+          final rawBarcode = itemData['barcode'] ?? '';
+          // Normalisasi: jika barcode lama = kode_barang (data lama),
+          // pakai item id sebagai barcode agar scan selalu unik
+          final effectiveBarcode = (rawBarcode.isEmpty || rawBarcode == kodeBarang)
+              ? itemId
+              : rawBarcode;
           return Item(
-            id: itemData['id'] ?? '',
+            id: itemId,
             jenisBarang: itemData['jenis_barang'] ?? '',
             merekModel: itemData['merek_model'] ?? '',
-            kodeBarang: itemData['kode_barang'] ?? '',
+            kodeBarang: kodeBarang,
             noRegister: itemData['no_register'] ?? itemData['noRegister'] ?? '',
             kondisiAset: itemData['kondisi_aset'] ?? itemData['kondisiAset'] ?? 'Baik',
             fotoUrl: itemData['foto_url'] ?? '',
-            barcode: itemData['barcode'] ?? '',
+            barcode: effectiveBarcode,
             tahunPerolehan: itemData['tahun_perolehan'] ?? '',
           );
         }).toList()
@@ -254,8 +262,20 @@ class _MainAppControllerState extends State<MainAppController> {
       setPublicRoomId(rId);
       setPublicItemId(null);
     } else if (queryParams.containsKey('item')) {
-      final iId = queryParams['item'];
-      setPublicItemId(iId);
+      final rawId = queryParams['item'];
+      // Cari item berdasarkan id — jika tidak ketemu, coba cari lewat barcode
+      // lalu gunakan item.id agar routing selalu by ID unik
+      String? resolvedId;
+      for (var r in _rooms) {
+        for (var i in r.items) {
+          if (i.id == rawId || i.barcode == rawId) {
+            resolvedId = i.id;
+            break;
+          }
+        }
+        if (resolvedId != null) break;
+      }
+      setPublicItemId(resolvedId ?? rawId);
       setPublicRoomId(null);
     }
   }
@@ -402,12 +422,13 @@ class _MainAppControllerState extends State<MainAppController> {
       );
     }
 
-    // 1. Check Public Item View Route — cari hanya berdasarkan ID unik
+    // 1. Check Public Item View Route — HANYA cocokkan berdasarkan item.id
     if (_publicItemId != null) {
       final List<MapEntry<Item, Room>> matchedItems = [];
       for (var r in _rooms) {
         for (var i in r.items) {
-          if (i.id == _publicItemId || i.barcode.trim() == _publicItemId!.trim()) {
+          // Hanya match by ID unik — tidak pernah by kode_barang
+          if (i.id == _publicItemId) {
             matchedItems.add(MapEntry(i, r));
           }
         }
