@@ -1796,16 +1796,41 @@ class _AgencyListScreenState extends State<AgencyListScreen> {
                     Text(agency.barcode,
                         style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280))),
                     const SizedBox(height: 20),
-                    OutlinedButton.icon(
-                      onPressed: () => Navigator.pop(ctx),
-                      icon: const Icon(Icons.close_rounded, size: 16),
-                      label: const Text('Tutup'),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFFD0D8E8)),
-                        foregroundColor: const Color(0xFF4A5568),
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        OutlinedButton.icon(
+                          onPressed: () => Navigator.pop(ctx),
+                          icon: const Icon(Icons.close_rounded, size: 16),
+                          label: const Text('Tutup'),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Color(0xFFD0D8E8)),
+                            foregroundColor: const Color(0xFF4A5568),
+                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(colors: [Color(0xFF1A2F5A), Color(0xFF2D4A8A)]),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: ElevatedButton.icon(
+                            onPressed: () async => await printAgencyLabelImpl(agency),
+                            icon: const Icon(Icons.print, size: 16),
+                            label: const Text('Cetak QR', style: TextStyle(fontWeight: FontWeight.bold)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              foregroundColor: Colors.white,
+                              shadowColor: Colors.transparent,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -2203,7 +2228,7 @@ class _AgencyListScreenState extends State<AgencyListScreen> {
                                                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                                         ),
-                                                        child: const Text('Buka Ruangan', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                                                        child: const Text('Buka', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
                                                       ),
                                                     ),
                                                   ],
