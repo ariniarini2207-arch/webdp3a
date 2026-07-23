@@ -1687,7 +1687,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     showDialog(
       context: context,
       builder: (context) {
-        return Dialog(
+        return StatefulBuilder(
+          builder: (context, dialogSetState) {
+            bool hasChanges() {
+              return nameController.text != room.name || yearController.text != room.year;
+            }
+
+            return Dialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           child: Container(
             constraints: const BoxConstraints(maxWidth: 420),
@@ -1732,6 +1738,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       children: [
                         TextFormField(
                           controller: nameController,
+                          onChanged: (_) => dialogSetState(() {}),
                           decoration: _navyInput('Nama Ruangan', Icons.meeting_room_outlined),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -1743,6 +1750,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         const SizedBox(height: 12),
                         TextFormField(
                           controller: yearController,
+                          onChanged: (_) => dialogSetState(() {}),
                           decoration: _navyInput('Tahun', Icons.calendar_today_outlined),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -1755,15 +1763,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            OutlinedButton(
+                            TextButton(
                               onPressed: () => Navigator.pop(context),
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: Color(0xFFD0D8E8)),
-                                foregroundColor: const Color(0xFF4A5568),
-                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: Colors.red.shade600,
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                               ),
-                              child: const Text('Batal', style: TextStyle(fontWeight: FontWeight.w600)),
+                              child: const Text('Batal', style: TextStyle(fontWeight: FontWeight.bold)),
                             ),
                             const SizedBox(width: 10),
                             Container(
@@ -1774,7 +1782,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: ElevatedButton.icon(
-                                onPressed: () async {
+                                onPressed: !hasChanges() ? null : () async {
                                   if (formKey.currentState!.validate()) {
                                     final editedBarcode = 'RM-${nameController.text.toUpperCase().replaceAll(' ', '-')}-${yearController.text}';
 
@@ -1828,6 +1836,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
           ),
+        );
+          },
         );
       },
     );
