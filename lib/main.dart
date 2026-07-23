@@ -98,6 +98,7 @@ class MainAppController extends StatefulWidget {
 class _MainAppControllerState extends State<MainAppController> {
   bool _isLoading = false;
   bool _isAdminLoggedIn = false;
+  String? _publicAgencyId;
   String? _publicRoomId;
   String? _publicItemId;
   String? _selectedItemId;
@@ -107,6 +108,17 @@ class _MainAppControllerState extends State<MainAppController> {
   // Simulated database of rooms & items
   List<Room> _rooms = [];
   List<Agency> _agencies = [];
+
+  void setPublicAgencyId(String? agencyId) {
+    setState(() {
+      _publicAgencyId = agencyId;
+    });
+    if (agencyId != null) {
+      saveToSession('public_agency_id', agencyId);
+    } else {
+      removeFromSession('public_agency_id');
+    }
+  }
 
   void setPublicRoomId(String? roomId) {
     setState(() {
@@ -167,8 +179,14 @@ class _MainAppControllerState extends State<MainAppController> {
     }
 
     // Baca dari sessionStorage (hanya berlaku selama tab ini terbuka)
+    final savedPublicAgencyId = getFromSession('public_agency_id');
     final savedPublicRoomId = getFromSession('public_room_id');
     final savedPublicItemId = getFromSession('public_item_id');
+    if (_publicAgencyId == null && savedPublicAgencyId != null) {
+      setState(() {
+        _publicAgencyId = savedPublicAgencyId;
+      });
+    }
     if (_publicRoomId == null && savedPublicRoomId != null) {
       setState(() {
         _publicRoomId = savedPublicRoomId;
@@ -288,10 +306,16 @@ class _MainAppControllerState extends State<MainAppController> {
 
   void _checkUrlRouting() {
     final queryParams = Uri.base.queryParameters;
-    if (queryParams.containsKey('room')) {
+    if (queryParams.containsKey('agency')) {
+      final aId = queryParams['agency'];
+      setPublicAgencyId(aId);
+      setPublicRoomId(null);
+      setPublicItemId(null);
+    } else if (queryParams.containsKey('room')) {
       final rId = queryParams['room'];
       setPublicRoomId(rId);
       setPublicItemId(null);
+      setPublicAgencyId(null);
     } else if (queryParams.containsKey('item')) {
       final rawId = queryParams['item'];
       // Cari item berdasarkan id — jika tidak ketemu, coba cari lewat barcode
@@ -308,6 +332,7 @@ class _MainAppControllerState extends State<MainAppController> {
       }
       setPublicItemId(resolvedId ?? rawId);
       setPublicRoomId(null);
+      setPublicAgencyId(null);
     }
   }
 
@@ -316,20 +341,27 @@ class _MainAppControllerState extends State<MainAppController> {
     final uri = Uri.tryParse(scannedText);
     if (uri != null && uri.host.isNotEmpty) {
       final queryParams = uri.queryParameters;
-      if (queryParams.containsKey('room')) {
+      if (queryParams.containsKey('agency')) {
+        setPublicAgencyId(queryParams['agency']);
+        setPublicRoomId(null);
+        setPublicItemId(null);
+        return;
+      } else if (queryParams.containsKey('room')) {
         setPublicRoomId(queryParams['room']);
         setPublicItemId(null);
+        setPublicAgencyId(null);
         return;
       } else if (queryParams.containsKey('item')) {
         setPublicItemId(queryParams['item']);
         setPublicRoomId(null);
+        setPublicAgencyId(null);
         return;
       }
     }
 
     final cleanedText = scannedText.trim();
 
-    // Cari item berdasarkan ID unik saja (agar scan hanya tampilkan 1 barang)
+    // 1. Cari item berdasarkan ID unik atau barcode
     bool hasItemMatch = false;
     String? matchedItemId;
     for (var r in _rooms) {
@@ -347,17 +379,30 @@ class _MainAppControllerState extends State<MainAppController> {
     if (hasItemMatch && matchedItemId != null) {
       setPublicItemId(matchedItemId);
       setPublicRoomId(null);
+      setPublicAgencyId(null);
       setState(() {
         _selectedItemId = null;
       });
       return;
     }
 
-    // Cari ruangan berdasarkan barcode atau ID
+    // 2. Cari ruangan berdasarkan barcode atau ID
     for (var r in _rooms) {
       if (r.barcode.trim().toUpperCase() == cleanedText.toUpperCase() ||
           r.id.trim() == cleanedText) {
         setPublicRoomId(r.id);
+        setPublicItemId(null);
+        setPublicAgencyId(null);
+        return;
+      }
+    }
+
+    // 3. Cari instansi berdasarkan barcode atau ID
+    for (var a in _agencies) {
+      if (a.barcode.trim().toUpperCase() == cleanedText.toUpperCase() ||
+          a.id.trim() == cleanedText) {
+        setPublicAgencyId(a.id);
+        setPublicRoomId(null);
         setPublicItemId(null);
         return;
       }
@@ -518,7 +563,108 @@ class _MainAppControllerState extends State<MainAppController> {
       }
     }
 
-    // 2. Check Public Room View Route
+    // 2. Check Public Agency View Route
+    if (_publicAgencyId != null) {
+      if (_publicRoomId != null) {
+        if (_selectedItemId != null) {
+          Item? selectedItem;
+          Room? selectedRoom;
+          for (var r in _rooms) {
+            for (var i in r.items) {
+              if (i.id == _selectedItemId) {
+                selectedItem = i;
+                selectedRoom = r;
+                break;
+              }
+            }
+            if (selectedItem != null) break;
+          }
+
+          if (selectedItem != null && selectedRoom != null) {
+            return PublicItemScreen(
+              item: selectedItem,
+              room: selectedRoom,
+              onBack: () {
+                setState(() {
+                  _selectedItemId = null;
+                });
+              },
+            );
+          }
+        }
+
+        if (_selectedGroupItems != null && _selectedGroupItems!.isNotEmpty) {
+          final parentRoom = _rooms.firstWhere(
+            (r) => r.id == _publicRoomId,
+            orElse: () => _rooms.first,
+          );
+          final List<MapEntry<Item, Room>> matchedGroupEntries =
+              _selectedGroupItems!.map((item) => MapEntry(item, parentRoom)).toList();
+
+          return PublicItemListScreen(
+            scannedCode: '${_selectedGroupItems!.first.jenisBarang} (${_selectedGroupItems!.length} Unit)',
+            matchedItems: matchedGroupEntries,
+            onBack: () {
+              setState(() {
+                _selectedGroupItems = null;
+              });
+            },
+            onViewItem: (item) {
+              setState(() {
+                _selectedItemId = item.id;
+              });
+            },
+          );
+        }
+
+        return PublicRoomScreen(
+          roomId: _publicRoomId!,
+          rooms: _rooms,
+          onBackToLogin: () {
+            setPublicRoomId(null);
+            setState(() {
+              _selectedGroupItems = null;
+              _selectedItemId = null;
+            });
+          },
+          onViewItem: (item) {
+            setState(() {
+              _selectedItemId = item.id;
+            });
+          },
+          onViewGroup: (groupItems) {
+            if (groupItems.length == 1) {
+              setState(() {
+                _selectedItemId = groupItems.first.id;
+              });
+            } else {
+              setState(() {
+                _selectedGroupItems = groupItems;
+              });
+            }
+          },
+        );
+      }
+
+      return PublicAgencyScreen(
+        agencyId: _publicAgencyId!,
+        agencies: _agencies,
+        onBackToLogin: () {
+          setPublicAgencyId(null);
+          setPublicRoomId(null);
+          setPublicItemId(null);
+          setState(() {
+            _selectedGroupItems = null;
+            _selectedItemId = null;
+          });
+        },
+        onSelectRoom: (room) {
+          setPublicRoomId(room.id);
+        },
+      );
+    }
+
+    // 3. Check Public Room View Route
     if (_publicRoomId != null) {
       // Jika user mengeklik 1 barang dari daftar kelompok
       if (_selectedItemId != null) {
@@ -5137,6 +5283,386 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                       ),
                     ),
                   ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ----------------------------------------------------
+// PUBLIC AGENCY VIEW SCREEN (READ ONLY)
+// ----------------------------------------------------
+class PublicAgencyScreen extends StatefulWidget {
+  final String agencyId;
+  final List<Agency> agencies;
+  final VoidCallback onBackToLogin;
+  final ValueChanged<Room> onSelectRoom;
+
+  const PublicAgencyScreen({
+    Key? key,
+    required this.agencyId,
+    required this.agencies,
+    required this.onBackToLogin,
+    required this.onSelectRoom,
+  }) : super(key: key);
+
+  @override
+  State<PublicAgencyScreen> createState() => _PublicAgencyScreenState();
+}
+
+class _PublicAgencyScreenState extends State<PublicAgencyScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text.trim().toLowerCase();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final agency = widget.agencies.firstWhere(
+      (a) => a.id == widget.agencyId || a.barcode.trim().toUpperCase() == widget.agencyId.trim().toUpperCase(),
+      orElse: () => Agency(id: '', name: '', barcode: '', rooms: []),
+    );
+
+    if (agency.id.isEmpty) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 80, color: Colors.red),
+              const SizedBox(height: 16),
+              const Text('Instansi Tidak Ditemukan',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: widget.onBackToLogin,
+                child: const Text('Ke Halaman Utama'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final filteredRooms = _searchQuery.isEmpty
+        ? agency.rooms
+        : agency.rooms
+            .where((r) => r.name.toLowerCase().contains(_searchQuery))
+            .toList();
+
+    final totalAssets = agency.rooms.fold<int>(0, (s, r) => s + r.items.length);
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FA),
+      appBar: AppBar(
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF1A2F5A), Color(0xFF1E3A6E)],
+            ),
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: widget.onBackToLogin,
+          tooltip: 'Kembali',
+        ),
+        title: Text('GENSET Instansi: ${agency.name}'),
+      ),
+      body: Stack(
+        children: [
+          // Background image
+          Positioned.fill(
+            child: Image.asset('assets/bg_empowerment.png', fit: BoxFit.cover),
+          ),
+          // Gradient overlay
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    const Color(0xFFF5F7FA).withOpacity(0.60),
+                    const Color(0xFFEDF2FB).withOpacity(0.75),
+                    const Color(0xFFEAEEF8).withOpacity(0.85),
+                  ],
+                  stops: const [0.0, 0.5, 1.0],
+                ),
+              ),
+            ),
+          ),
+          Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 800),
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Agency Header Banner
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.95),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFD0D8E8)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF1A2F5A).withOpacity(0.06),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1A2F5A).withOpacity(0.08),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(Icons.domain_rounded,
+                                  color: Color(0xFF1A2F5A), size: 28),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    agency.name,
+                                    style: const TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w900,
+                                      color: Color(0xFF1A2F5A),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Kode Instansi: ${agency.barcode}',
+                                    style: const TextStyle(
+                                      color: Color(0xFF4A5568),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            _InfoChip(
+                              icon: Icons.meeting_room_outlined,
+                              label: '${agency.rooms.length} Ruangan Terdaftar',
+                              color: const Color(0xFF1A2F5A),
+                            ),
+                            const SizedBox(width: 10),
+                            _InfoChip(
+                              icon: Icons.inventory_2_outlined,
+                              label: '$totalAssets Total Aset',
+                              color: const Color(0xFF2D7D46),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Search Bar
+                  Container(
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFD0D8E8)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        hintText: 'Cari ruangan dalam instansi ini...',
+                        hintStyle: const TextStyle(
+                            color: Color(0xFF9EB0C8), fontSize: 14),
+                        prefixIcon: const Icon(Icons.search_rounded,
+                            color: Color(0xFF1A2F5A), size: 20),
+                        suffixIcon: _searchQuery.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.close_rounded,
+                                    color: Color(0xFF1A2F5A), size: 18),
+                                onPressed: () => _searchController.clear(),
+                              )
+                            : null,
+                        border: InputBorder.none,
+                        contentPadding:
+                            const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Section Title
+                  const Text(
+                    'Daftar Ruangan Terdaftar',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1A2F5A),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // List of Rooms (Read Only view)
+                  Expanded(
+                    child: filteredRooms.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.meeting_room_outlined,
+                                    size: 64,
+                                    color: const Color(0xFF1A2F5A)
+                                        .withOpacity(0.2)),
+                                const SizedBox(height: 12),
+                                const Text(
+                                  'Tidak ada ruangan ditemukan',
+                                  style: TextStyle(
+                                      color: Color(0xFF4A5568),
+                                      fontWeight: FontWeight.w600),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.separated(
+                            itemCount: filteredRooms.length,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: 12),
+                            itemBuilder: (context, index) {
+                              final room = filteredRooms[index];
+                              final itemCount = room.items.length;
+                              return Card(
+                                elevation: 0,
+                                color: Colors.white.withOpacity(0.95),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  side: BorderSide(color: Colors.grey[200]!),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF1A2F5A)
+                                              .withOpacity(0.08),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        child: const Icon(
+                                            Icons.meeting_room_rounded,
+                                            color: Color(0xFF1A2F5A),
+                                            size: 24),
+                                      ),
+                                      const SizedBox(width: 14),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              room.name,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                                color: Color(0xFF111111),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  'Tahun: ${room.year}',
+                                                  style: const TextStyle(
+                                                      fontSize: 12,
+                                                      color: Color(0xFF4A5568)),
+                                                ),
+                                                const SizedBox(width: 12),
+                                                _InfoChip(
+                                                  icon: Icons
+                                                      .inventory_2_outlined,
+                                                  label: '$itemCount Aset',
+                                                  color: const Color(0xFF2D7D46),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      // Read-only "Lihat Aset" button
+                                      ElevatedButton.icon(
+                                        onPressed: () => widget.onSelectRoom(room),
+                                        icon: const Icon(Icons.visibility_outlined,
+                                            size: 16),
+                                        label: const Text('Lihat Aset',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 13)),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                              const Color(0xFF1A2F5A),
+                                          foregroundColor: Colors.white,
+                                          elevation: 0,
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 16, vertical: 10),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
