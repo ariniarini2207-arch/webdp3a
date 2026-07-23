@@ -1835,167 +1835,260 @@ class _AgencyListScreenState extends State<AgencyListScreen> {
     final filteredAgencies = _searchQuery.isEmpty
         ? agencies
         : agencies.where((a) => a.name.toLowerCase().contains(_searchQuery)).toList();
-    final isMobile = MediaQuery.of(context).size.width < 700;
 
-    // ── Mobile Layout ─────────────────────────────────────────────────────────
-    if (isMobile) {
-      return Scaffold(
-        appBar: AppBar(
-          flexibleSpace: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF1A2F5A), Color(0xFF1E3A6E)],
-              ),
-            ),
-          ),
-          backgroundColor: Colors.transparent,
-          foregroundColor: Colors.white,
-          title: Row(
+    // ── Single unified layout (AppBar + Drawer, works on all screen sizes) ─────
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      drawer: Drawer(
+        backgroundColor: const Color(0xFF1A2F5A),
+        child: SafeArea(
+          child: Column(
             children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE8C155).withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8),
+              const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE8C155).withOpacity(0.18),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.domain_rounded, color: Color(0xFFE8C155), size: 24),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Text('Panel Admin',
+                          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
+                  ],
                 ),
-                child: const Icon(Icons.domain_rounded, color: Color(0xFFE8C155), size: 18),
               ),
-              const SizedBox(width: 10),
-              const Text('Panel Admin',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            ],
-          ),
-          actions: [
-            IconButton(
-              onPressed: widget.onScanPressed,
-              icon: const Icon(Icons.qr_code_scanner_rounded),
-              tooltip: 'Scan QR',
-            ),
-            IconButton(
-              onPressed: _showLogoutConfirmation,
-              icon: const Icon(Icons.logout_rounded),
-              tooltip: 'Keluar',
-            ),
-          ],
-        ),
-        backgroundColor: const Color(0xFFF0F4FA),
-        body: Stack(
-          children: [
-            // Background image
-            Positioned.fill(
-              child: Image.asset('assets/bg_empowerment.png', fit: BoxFit.cover),
-            ),
-            // Gradient overlay
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      const Color(0xFFF5F7FA).withOpacity(0.62),
-                      const Color(0xFFEDF2FB).withOpacity(0.78),
-                      const Color(0xFFEAEEF8).withOpacity(0.85),
-                    ],
-                    stops: const [0.0, 0.5, 1.0],
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('DP3A DALDUK KB\nSulawesi Selatan',
+                      style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 11, height: 1.4)),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Divider(color: Colors.white.withOpacity(0.08), indent: 20, endIndent: 20),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE8C155).withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFE8C155).withOpacity(0.3)),
+                  ),
+                  child: const ListTile(
+                    dense: true,
+                    leading: Icon(Icons.domain_rounded, color: Color(0xFFE8C155), size: 20),
+                    title: Text('Daftar Instansi', style: TextStyle(color: Color(0xFFE8C155), fontWeight: FontWeight.bold, fontSize: 13)),
                   ),
                 ),
               ),
-            ),
-            // Content
-            SafeArea(
-              child: Column(
-                children: [
-                  // Stats row
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.92),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: Colors.white.withOpacity(0.6)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          _StatCard(icon: Icons.domain_rounded, label: 'Instansi', value: '${agencies.length}', color: const Color(0xFF1A2F5A)),
-                          _StatCard(icon: Icons.meeting_room_rounded, label: 'Ruangan', value: '${agencies.fold<int>(0, (s, a) => s + a.rooms.length)}', color: const Color(0xFF2D7D46)),
-                          _StatCard(icon: Icons.inventory_2_rounded, label: 'Aset', value: '${agencies.fold<int>(0, (s, a) => a.rooms.fold<int>(s, (rs, r) => rs + r.items.length))}', color: const Color(0xFFC08000)),
-                        ],
-                      ),
+              const Spacer(),
+              Divider(color: Colors.white.withOpacity(0.08), indent: 20, endIndent: 20),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text('© $year DP3A DALDUK KB\nProvinsi Sulawesi Selatan',
+                    style: TextStyle(color: Colors.white.withOpacity(0.35), fontSize: 10, height: 1.5),
+                    textAlign: TextAlign.center),
+              ),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _showLogoutConfirmation();
+                    },
+                    icon: const Icon(Icons.logout_rounded, size: 16),
+                    label: const Text('Keluar', style: TextStyle(fontWeight: FontWeight.w600)),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: Colors.white.withOpacity(0.25)),
+                      foregroundColor: Colors.white.withOpacity(0.8),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                   ),
-                  // Search + Add
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: const Color(0xFFD0D8E8)),
-                            ),
-                            child: TextField(
-                              controller: _searchController,
-                              decoration: InputDecoration(
-                                hintText: 'Cari instansi...',
-                                hintStyle: const TextStyle(color: Color(0xFF9EB0C8), fontSize: 14),
-                                prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF1A2F5A), size: 20),
-                                suffixIcon: _searchQuery.isNotEmpty
-                                    ? IconButton(
-                                        icon: const Icon(Icons.close_rounded, color: Color(0xFF1A2F5A), size: 18),
-                                        onPressed: () => _searchController.clear(),
-                                      )
-                                    : null,
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        ElevatedButton.icon(
-                          onPressed: _showAddAgencyDialog,
-                          icon: const Icon(Icons.add, size: 18),
-                          label: const Text('Tambah'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF1A2F5A),
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      appBar: AppBar(
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF1A2F5A), Color(0xFF1E3A6E)],
+            ),
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE8C155).withOpacity(0.22),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.domain_rounded, color: Color(0xFFE8C155), size: 18),
+            ),
+            const SizedBox(width: 10),
+            const Text('Panel Admin',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          ],
+        ),
+        actions: [
+          IconButton(
+            onPressed: widget.onScanPressed,
+            icon: const Icon(Icons.qr_code_scanner_rounded),
+            tooltip: 'Scan QR',
+          ),
+          IconButton(
+            onPressed: _showLogoutConfirmation,
+            icon: const Icon(Icons.logout_rounded),
+            tooltip: 'Keluar',
+          ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          // Background image
+          Positioned.fill(
+            child: Image.asset('assets/bg_empowerment.png', fit: BoxFit.cover),
+          ),
+          // Gradient overlay
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    const Color(0xFFF5F7FA).withOpacity(0.60),
+                    const Color(0xFFEDF2FB).withOpacity(0.72),
+                    const Color(0xFFEAEEF8).withOpacity(0.80),
+                  ],
+                  stops: const [0.0, 0.5, 1.0],
+                ),
+              ),
+            ),
+          ),
+          // Main content
+          Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 1200),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Stats row
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.92),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.white.withOpacity(0.6)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
                         ),
                       ],
                     ),
+                    child: Row(
+                      children: [
+                        _StatCard(icon: Icons.domain_rounded, label: 'Total Instansi', value: '${agencies.length}', color: const Color(0xFF1A2F5A)),
+                        _StatCard(icon: Icons.meeting_room_rounded, label: 'Total Ruangan', value: '${agencies.fold<int>(0, (s, a) => s + a.rooms.length)}', color: const Color(0xFF2D7D46)),
+                        _StatCard(icon: Icons.inventory_2_rounded, label: 'Total Aset', value: '${agencies.fold<int>(0, (s, a) => a.rooms.fold<int>(s, (rs, r) => rs + r.items.length))}', color: const Color(0xFFC08000)),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 12),
-                  // Agency list
+                  const SizedBox(height: 16),
+
+                  // Search + Add button row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFFD0D8E8)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.03),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: TextField(
+                            controller: _searchController,
+                            decoration: InputDecoration(
+                              hintText: 'Cari instansi...',
+                              hintStyle: const TextStyle(color: Color(0xFF9EB0C8), fontSize: 14),
+                              prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF1A2F5A), size: 20),
+                              suffixIcon: _searchQuery.isNotEmpty
+                                  ? IconButton(
+                                      icon: const Icon(Icons.close_rounded, color: Color(0xFF1A2F5A), size: 18),
+                                      onPressed: () => _searchController.clear(),
+                                    )
+                                  : null,
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      ElevatedButton.icon(
+                        onPressed: _showAddAgencyDialog,
+                        icon: const Icon(Icons.add, size: 18),
+                        label: const Text('Tambah Instansi'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1A2F5A),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Agency grid / list
                   Expanded(
                     child: agencies.isEmpty
                         ? Center(
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.domain_disabled_rounded, size: 64,
+                                Icon(Icons.domain_disabled_rounded, size: 72,
                                     color: const Color(0xFF1A2F5A).withOpacity(0.15)),
-                                const SizedBox(height: 12),
+                                const SizedBox(height: 16),
                                 const Text('Belum ada instansi',
                                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF4A5568))),
-                                const SizedBox(height: 6),
-                                const Text('Tap "Tambah" untuk membuat instansi baru',
+                                const SizedBox(height: 8),
+                                const Text('Klik "Tambah Instansi" untuk membuat instansi baru',
                                     style: TextStyle(fontSize: 13, color: Color(0xFF9EB0C8))),
                               ],
                             ),
@@ -2005,10 +2098,14 @@ class _AgencyListScreenState extends State<AgencyListScreen> {
                                 child: Text('Instansi "${_searchController.text}" tidak ditemukan',
                                     style: const TextStyle(color: Color(0xFF4A5568), fontSize: 14)),
                               )
-                            : ListView.separated(
-                                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                            : GridView.builder(
+                                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                                  maxCrossAxisExtent: 380,
+                                  mainAxisExtent: 230,
+                                  crossAxisSpacing: 16,
+                                  mainAxisSpacing: 16,
+                                ),
                                 itemCount: filteredAgencies.length,
-                                separatorBuilder: (_, __) => const SizedBox(height: 12),
                                 itemBuilder: (context, index) {
                                   final agency = filteredAgencies[index];
                                   final roomCount = agency.rooms.length;
@@ -2021,7 +2118,7 @@ class _AgencyListScreenState extends State<AgencyListScreen> {
                                       side: BorderSide(color: Colors.grey[200]!),
                                     ),
                                     child: Padding(
-                                      padding: const EdgeInsets.all(16),
+                                      padding: const EdgeInsets.all(18.0),
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
@@ -2042,7 +2139,8 @@ class _AgencyListScreenState extends State<AgencyListScreen> {
                                                   crossAxisAlignment: CrossAxisAlignment.start,
                                                   children: [
                                                     Text(agency.name,
-                                                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF111111))),
+                                                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF111111)),
+                                                        overflow: TextOverflow.ellipsis),
                                                     const SizedBox(height: 2),
                                                     Text(agency.barcode,
                                                         style: const TextStyle(fontSize: 11, color: Color(0xFF9EB0C8))),
@@ -2059,7 +2157,7 @@ class _AgencyListScreenState extends State<AgencyListScreen> {
                                               ),
                                             ],
                                           ),
-                                          const SizedBox(height: 12),
+                                          const SizedBox(height: 14),
                                           Row(
                                             children: [
                                               _InfoChip(icon: Icons.meeting_room_outlined, label: '$roomCount Ruangan', color: const Color(0xFF1A2F5A)),
@@ -2067,7 +2165,7 @@ class _AgencyListScreenState extends State<AgencyListScreen> {
                                               _InfoChip(icon: Icons.inventory_2_outlined, label: '$assetCount Aset', color: const Color(0xFF2D7D46)),
                                             ],
                                           ),
-                                          const SizedBox(height: 12),
+                                          const Spacer(),
                                           Row(
                                             mainAxisAlignment: MainAxisAlignment.end,
                                             children: [
@@ -2078,7 +2176,7 @@ class _AgencyListScreenState extends State<AgencyListScreen> {
                                                 padding: EdgeInsets.zero,
                                                 constraints: const BoxConstraints(),
                                               ),
-                                              const SizedBox(width: 14),
+                                              const SizedBox(width: 12),
                                               IconButton(
                                                 onPressed: () async {
                                                   final confirm = await showDialog<bool>(
@@ -2147,428 +2245,13 @@ class _AgencyListScreenState extends State<AgencyListScreen> {
                 ],
               ),
             ),
-          ],
-        ),
-      );
-    }
-
-    // ── Desktop / Tablet Layout ───────────────────────────────────────────────
-    return Scaffold(
-      backgroundColor: const Color(0xFFF0F4FA),
-      body: Row(
-        children: [
-          // ── Left Sidebar ─────────────────────────────────────────────────────
-          Container(
-            width: 240,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF1A2F5A), Color(0xFF0F1F3D)],
-              ),
-            ),
-            child: Column(
-              children: [
-                const SizedBox(height: 32),
-                // Logo & Title
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE8C155).withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(Icons.domain_rounded, color: Color(0xFFE8C155), size: 24),
-                      ),
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Text('Panel Admin',
-                            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Text('DP3A DALDUK KB\nSulawesi Selatan',
-                      style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 11, height: 1.4)),
-                ),
-                const SizedBox(height: 24),
-                Container(height: 1, color: Colors.white.withOpacity(0.08), margin: const EdgeInsets.symmetric(horizontal: 20)),
-                const SizedBox(height: 16),
-                // Nav item
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE8C155).withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: const Color(0xFFE8C155).withOpacity(0.3)),
-                    ),
-                    child: const ListTile(
-                      dense: true,
-                      leading: Icon(Icons.domain_rounded, color: Color(0xFFE8C155), size: 20),
-                      title: Text('Daftar Instansi', style: TextStyle(color: Color(0xFFE8C155), fontWeight: FontWeight.bold, fontSize: 13)),
-                    ),
-                  ),
-                ),
-                const Spacer(),
-                // Footer
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      Container(height: 1, color: Colors.white.withOpacity(0.08)),
-                      const SizedBox(height: 16),
-                      Text('© $year DP3A DALDUK KB\nProvinsi Sulawesi Selatan',
-                          style: TextStyle(color: Colors.white.withOpacity(0.35), fontSize: 10, height: 1.5),
-                          textAlign: TextAlign.center),
-                      const SizedBox(height: 12),
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: _showLogoutConfirmation,
-                          icon: const Icon(Icons.logout_rounded, size: 16),
-                          label: const Text('Keluar', style: TextStyle(fontWeight: FontWeight.w600)),
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: Colors.white.withOpacity(0.2)),
-                            foregroundColor: Colors.white.withOpacity(0.75),
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // ── Main Content ────────────────────────────────────────────────────
-          Expanded(
-            child: Stack(
-              children: [
-                // Background image
-                Positioned.fill(
-                  child: Image.asset('assets/bg_empowerment.png', fit: BoxFit.cover),
-                ),
-                // Gradient overlay
-                Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          const Color(0xFFF5F7FA).withOpacity(0.6),
-                          const Color(0xFFEDF2FB).withOpacity(0.75),
-                          const Color(0xFFEAEEF8).withOpacity(0.85),
-                        ],
-                        stops: const [0.0, 0.5, 1.0],
-                      ),
-                    ),
-                  ),
-                ),
-                // Content column
-                Column(
-                  children: [
-                    // Top bar
-                    Container(
-                      height: 64,
-                      padding: const EdgeInsets.symmetric(horizontal: 28),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
-                        border: const Border(bottom: BorderSide(color: Color(0xFFEEF2F8))),
-                      ),
-                      child: Row(
-                        children: [
-                          const Text('Manajemen Instansi',
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A2F5A))),
-                          const Spacer(),
-                          OutlinedButton.icon(
-                            onPressed: widget.onScanPressed,
-                            icon: const Icon(Icons.qr_code_scanner_rounded, size: 18),
-                            label: const Text('Scan QR'),
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Color(0xFFD0D8E8)),
-                              foregroundColor: const Color(0xFF1A2F5A),
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          ElevatedButton.icon(
-                            onPressed: _showAddAgencyDialog,
-                            icon: const Icon(Icons.add, size: 18),
-                            label: const Text('Tambah Instansi'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF1A2F5A),
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Body content
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.all(28),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Stats row
-                            Row(
-                              children: [
-                                _StatCard(
-                                  icon: Icons.domain_rounded,
-                                  label: 'Total Instansi',
-                                  value: '${agencies.length}',
-                                  color: const Color(0xFF1A2F5A),
-                                ),
-                                const SizedBox(width: 16),
-                                _StatCard(
-                                  icon: Icons.meeting_room_rounded,
-                                  label: 'Total Ruangan',
-                                  value: '${agencies.fold<int>(0, (s, a) => s + a.rooms.length)}',
-                                  color: const Color(0xFF2D7D46),
-                                ),
-                                const SizedBox(width: 16),
-                                _StatCard(
-                                  icon: Icons.inventory_2_rounded,
-                                  label: 'Total Aset',
-                                  value: '${agencies.fold<int>(0, (s, a) => a.rooms.fold<int>(s, (rs, r) => rs + r.items.length))}',
-                                  color: const Color(0xFFC08000),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 24),
-
-                            // Search bar
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Container(
-                                    height: 44,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(color: const Color(0xFFD0D8E8)),
-                                    ),
-                                    child: TextField(
-                                      controller: _searchController,
-                                      decoration: InputDecoration(
-                                        hintText: 'Cari instansi...',
-                                        hintStyle: const TextStyle(color: Color(0xFF9EB0C8), fontSize: 14),
-                                        prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF1A2F5A), size: 20),
-                                        suffixIcon: _searchQuery.isNotEmpty
-                                            ? IconButton(
-                                                icon: const Icon(Icons.close_rounded, color: Color(0xFF1A2F5A), size: 18),
-                                                onPressed: () => _searchController.clear(),
-                                              )
-                                            : null,
-                                        border: InputBorder.none,
-                                        contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 20),
-
-                            // Agency grid
-                            Expanded(
-                              child: agencies.isEmpty
-                                  ? Center(
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(Icons.domain_disabled_rounded, size: 72,
-                                              color: const Color(0xFF1A2F5A).withOpacity(0.15)),
-                                          const SizedBox(height: 16),
-                                          const Text('Belum ada instansi',
-                                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF4A5568))),
-                                          const SizedBox(height: 8),
-                                          const Text('Klik "Tambah Instansi" untuk membuat instansi baru',
-                                              style: TextStyle(fontSize: 13, color: Color(0xFF9EB0C8))),
-                                        ],
-                                      ),
-                                    )
-                                  : filteredAgencies.isEmpty
-                                      ? Center(
-                                          child: Text('Instansi "${_searchController.text}" tidak ditemukan',
-                                              style: const TextStyle(color: Color(0xFF4A5568), fontSize: 14)),
-                                        )
-                                      : GridView.builder(
-                                          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                                            maxCrossAxisExtent: 380,
-                                            mainAxisExtent: 230,
-                                            crossAxisSpacing: 20,
-                                            mainAxisSpacing: 20,
-                                          ),
-                                          itemCount: filteredAgencies.length,
-                                          itemBuilder: (context, index) {
-                                            final agency = filteredAgencies[index];
-                                            final roomCount = agency.rooms.length;
-                                            final assetCount = agency.rooms.fold<int>(0, (s, r) => s + r.items.length);
-                                            return Card(
-                                              elevation: 0,
-                                              color: Colors.white.withOpacity(0.95),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(14),
-                                                side: BorderSide(color: Colors.grey[200]!),
-                                              ),
-                                              child: Padding(
-                                                padding: const EdgeInsets.all(18.0),
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Row(
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                                      children: [
-                                                        Container(
-                                                          padding: const EdgeInsets.all(10),
-                                                          decoration: BoxDecoration(
-                                                            color: const Color(0xFF1A2F5A).withOpacity(0.08),
-                                                            borderRadius: BorderRadius.circular(10),
-                                                          ),
-                                                          child: const Icon(Icons.domain_rounded, color: Color(0xFF1A2F5A), size: 22),
-                                                        ),
-                                                        const SizedBox(width: 12),
-                                                        Expanded(
-                                                          child: Column(
-                                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                                            children: [
-                                                              Text(agency.name,
-                                                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF111111)),
-                                                                  overflow: TextOverflow.ellipsis),
-                                                              const SizedBox(height: 2),
-                                                              Text(agency.barcode,
-                                                                  style: const TextStyle(fontSize: 11, color: Color(0xFF9EB0C8))),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        InkWell(
-                                                          onTap: () => _showQrDialog(agency),
-                                                          borderRadius: BorderRadius.circular(6),
-                                                          child: QRCodeWidget(
-                                                            data: generateAgencyUrl(agency.id),
-                                                            size: 55,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    const SizedBox(height: 14),
-                                                    Row(
-                                                      children: [
-                                                        _InfoChip(icon: Icons.meeting_room_outlined, label: '$roomCount Ruangan', color: const Color(0xFF1A2F5A)),
-                                                        const SizedBox(width: 8),
-                                                        _InfoChip(icon: Icons.inventory_2_outlined, label: '$assetCount Aset', color: const Color(0xFF2D7D46)),
-                                                      ],
-                                                    ),
-                                                    const Spacer(),
-                                                    Row(
-                                                      mainAxisAlignment: MainAxisAlignment.end,
-                                                      children: [
-                                                        // Edit
-                                                        IconButton(
-                                                          onPressed: () => _showEditAgencyDialog(agency),
-                                                          icon: const Icon(Icons.edit_outlined, color: Color(0xFF1A2F5A), size: 20),
-                                                          tooltip: 'Edit Instansi',
-                                                          padding: EdgeInsets.zero,
-                                                          constraints: const BoxConstraints(),
-                                                        ),
-                                                        const SizedBox(width: 12),
-                                                        // Delete
-                                                        IconButton(
-                                                          onPressed: () async {
-                                                            final confirm = await showDialog<bool>(
-                                                              context: context,
-                                                              builder: (ctx) => AlertDialog(
-                                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                                                title: const Text('Hapus Instansi?', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                                                                content: Text('Yakin ingin menghapus instansi "${agency.name}"? Semua ruangan & aset di dalamnya juga akan terhapus.'),
-                                                                actions: [
-                                                                  TextButton(
-                                                                    onPressed: () => Navigator.pop(ctx, false),
-                                                                    child: const Text('Batal', style: TextStyle(color: Color(0xFF4A5568))),
-                                                                  ),
-                                                                  TextButton(
-                                                                    onPressed: () => Navigator.pop(ctx, true),
-                                                                    child: const Text('Hapus', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            );
-                                                            if (confirm == true) await _deleteAgency(agency);
-                                                          },
-                                                          icon: const Icon(Icons.delete_outline_rounded, color: Colors.red, size: 20),
-                                                          tooltip: 'Hapus Instansi',
-                                                          padding: EdgeInsets.zero,
-                                                          constraints: const BoxConstraints(),
-                                                        ),
-                                                        const Spacer(),
-                                                        // Open rooms
-                                                        ElevatedButton(
-                                                          onPressed: () {
-                                                            Navigator.push(
-                                                              context,
-                                                              MaterialPageRoute(
-                                                                builder: (context) => DashboardScreen(
-                                                                  rooms: agency.rooms,
-                                                                  onLogout: widget.onLogout,
-                                                                  onRoomsChanged: (updatedRooms) {
-                                                                    final updatedAgency = agency.copyWith(rooms: updatedRooms);
-                                                                    final updatedAll = agencies.map((a) => a.id == agency.id ? updatedAgency : a).toList();
-                                                                    widget.onAgenciesChanged(updatedAll);
-                                                                  },
-                                                                  onScanPressed: widget.onScanPressed,
-                                                                  onHostOverrideChanged: widget.onHostOverrideChanged,
-                                                                ),
-                                                              ),
-                                                            );
-                                                          },
-                                                          style: ElevatedButton.styleFrom(
-                                                            backgroundColor: const Color(0xFF1A2F5A),
-                                                            foregroundColor: Colors.white,
-                                                            elevation: 0,
-                                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                                          ),
-                                                          child: const Text('Buka', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
           ),
         ],
       ),
     );
   }
 }
+
 
 // ── Helper widgets ─────────────────────────────────────────────────────────────
 class _StatCard extends StatelessWidget {
