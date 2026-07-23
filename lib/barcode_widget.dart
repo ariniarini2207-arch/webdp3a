@@ -61,23 +61,30 @@ class QRCodeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return QrImageView(
-      data: data,
-      size: size,
-      eyeStyle: QrEyeStyle(
-        eyeShape: QrEyeShape.square,
-        color: qrColor,
+    return Container(
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(12),
       ),
-      dataModuleStyle: QrDataModuleStyle(
-        dataModuleShape: QrDataModuleShape.square,
-        color: qrColor,
-      ),
-      backgroundColor: backgroundColor,
-      padding: EdgeInsets.all(size * 0.06),
-      errorCorrectionLevel: QrErrorCorrectLevel.H, // High error correction level needed when using a logo
-      embeddedImage: const AssetImage('assets/logo_sulsel_original.png'),
-      embeddedImageStyle: QrEmbeddedImageStyle(
-        size: Size(size * 0.25, size * 0.25),
+      padding: EdgeInsets.all(size * 0.08), // Adequate quiet zone margin for camera scanners
+      child: QrImageView(
+        data: data,
+        size: size,
+        eyeStyle: QrEyeStyle(
+          eyeShape: QrEyeShape.square,
+          color: qrColor,
+        ),
+        dataModuleStyle: QrDataModuleStyle(
+          dataModuleShape: QrDataModuleShape.square,
+          color: qrColor,
+        ),
+        backgroundColor: backgroundColor,
+        padding: EdgeInsets.zero,
+        errorCorrectionLevel: QrErrorCorrectLevel.H, // Maximum 30% error recovery capacity
+        embeddedImage: const AssetImage('assets/logo_sulsel_original.png'),
+        embeddedImageStyle: QrEmbeddedImageStyle(
+          size: Size(size * 0.18, size * 0.18), // Optimal 18% size prevents module corruption
+        ),
       ),
     );
   }

@@ -1888,7 +1888,7 @@ class _AgencyListScreenState extends State<AgencyListScreen> {
 
   // ── QR Dialog ─────────────────────────────────────────────────────────────
   void _showQrDialog(Agency agency) {
-    final qrData = 'INS:${agency.id}';
+    final qrData = generateAgencyUrl(agency.id);
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
