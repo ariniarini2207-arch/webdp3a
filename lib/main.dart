@@ -1991,14 +1991,14 @@ class _AgencyListScreenState extends State<AgencyListScreen> {
                             _StatCard(
                               icon: Icons.meeting_room_rounded,
                               label: 'Total Ruangan',
-                              value: '${agencies.fold(0, (s, a) => s + a.rooms.length)}',
+                              value: '${agencies.fold<int>(0, (s, a) => s + a.rooms.length)}',
                               color: const Color(0xFF2D7D46),
                             ),
                             const SizedBox(width: 16),
                             _StatCard(
                               icon: Icons.inventory_2_rounded,
                               label: 'Total Aset',
-                              value: '${agencies.fold(0, (s, a) => s + a.rooms.fold(0, (rs, r) => rs + r.items.length))}',
+                              value: '${agencies.fold<int>(0, (s, a) => s + a.rooms.fold<int>(0, (rs, r) => rs + r.items.length))}',
                               color: const Color(0xFFC08000),
                             ),
                           ],
@@ -2072,7 +2072,7 @@ class _AgencyListScreenState extends State<AgencyListScreen> {
                                       itemBuilder: (context, index) {
                                         final agency = filteredAgencies[index];
                                         final roomCount = agency.rooms.length;
-                                        final assetCount = agency.rooms.fold(0, (s, r) => s + r.items.length);
+                                        final assetCount = agency.rooms.fold<int>(0, (s, r) => s + r.items.length);
                                         return Card(
                                           elevation: 0,
                                           color: Colors.white,
