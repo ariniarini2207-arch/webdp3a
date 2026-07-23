@@ -1530,23 +1530,19 @@ class _AgencyListScreenState extends State<AgencyListScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            OutlinedButton(
+                            ElevatedButton(
                               onPressed: () => Navigator.pop(context),
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: Color(0xFFE53935)),
-                                foregroundColor: const Color(0xFFE53935),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFE53935),
+                                foregroundColor: Colors.white,
+                                elevation: 0,
                                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                               ),
                               child: const Text('Batal', style: TextStyle(fontWeight: FontWeight.w600)),
                             ),
                             const SizedBox(width: 10),
-                            Container(
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(colors: [Color(0xFF1A2F5A), Color(0xFF2D4A8A)]),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: ElevatedButton.icon(
+                            ElevatedButton.icon(
                                 onPressed: () async {
                                   if (formKey.currentState!.validate()) {
                                     final newAgency = Agency(
@@ -1576,9 +1572,8 @@ class _AgencyListScreenState extends State<AgencyListScreen> {
                                   }
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.transparent,
+                                  backgroundColor: const Color(0xFF1A2F5A),
                                   foregroundColor: Colors.white,
-                                  shadowColor: Colors.transparent,
                                   elevation: 0,
                                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -1586,7 +1581,6 @@ class _AgencyListScreenState extends State<AgencyListScreen> {
                                 icon: const Icon(Icons.save_outlined, size: 16),
                                 label: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.w700)),
                               ),
-                            ),
                           ],
                         ),
                       ],
@@ -1685,49 +1679,38 @@ class _AgencyListScreenState extends State<AgencyListScreen> {
                                 child: const Text('Batal', style: TextStyle(fontWeight: FontWeight.w600)),
                               ),
                               const SizedBox(width: 10),
-                              Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: _hasChanges
-                                        ? [const Color(0xFF1A2F5A), const Color(0xFF2D4A8A)]
-                                        : [Colors.grey.shade300, Colors.grey.shade300],
-                                  ),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: ElevatedButton.icon(
-                                  onPressed: _hasChanges ? () async {
-                                    if (formKey.currentState!.validate()) {
-                                      final newName = nameController.text.trim();
-                                      final newBarcode = 'INS-${newName.toUpperCase().replaceAll(' ', '-')}';
-                                      if (isSupabaseConfigured) {
-                                        try {
-                                          await Supabase.instance.client.from('agencies').update({
-                                            'name': newName,
-                                            'barcode': newBarcode,
-                                          }).eq('id', agency.id);
-                                        } catch (e) {
-                                          debugPrint('Supabase Agency Update Error: $e');
-                                        }
+                              ElevatedButton.icon(
+                                onPressed: _hasChanges ? () async {
+                                  if (formKey.currentState!.validate()) {
+                                    final newName = nameController.text.trim();
+                                    final newBarcode = 'INS-${newName.toUpperCase().replaceAll(' ', '-')}';
+                                    if (isSupabaseConfigured) {
+                                      try {
+                                        await Supabase.instance.client.from('agencies').update({
+                                          'name': newName,
+                                          'barcode': newBarcode,
+                                        }).eq('id', agency.id);
+                                      } catch (e) {
+                                        debugPrint('Supabase Agency Update Error: $e');
                                       }
-                                      final updated = agencies.map((a) {
-                                        if (a.id == agency.id) return a.copyWith(name: newName, barcode: newBarcode);
-                                        return a;
-                                      }).toList();
-                                      widget.onAgenciesChanged(updated);
-                                      if (context.mounted) Navigator.pop(context);
                                     }
-                                  } : null,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.transparent,
-                                    foregroundColor: Colors.white,
-                                    shadowColor: Colors.transparent,
-                                    elevation: 0,
-                                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                  ),
-                                  icon: const Icon(Icons.save_outlined, size: 16),
-                                  label: const Text('Simpan Perubahan', style: TextStyle(fontWeight: FontWeight.w700)),
+                                    final updated = agencies.map((a) {
+                                      if (a.id == agency.id) return a.copyWith(name: newName, barcode: newBarcode);
+                                      return a;
+                                    }).toList();
+                                    widget.onAgenciesChanged(updated);
+                                    if (context.mounted) Navigator.pop(context);
+                                  }
+                                } : null,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF1A2F5A),
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                 ),
+                                icon: const Icon(Icons.save_outlined, size: 16),
+                                label: const Text('Simpan Perubahan', style: TextStyle(fontWeight: FontWeight.w700)),
                               ),
                             ],
                           ),
@@ -2584,25 +2567,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            OutlinedButton(
+                            ElevatedButton(
                               onPressed: () => Navigator.pop(context),
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: Color(0xFFD0D8E8)),
-                                foregroundColor: const Color(0xFF4A5568),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFE53935),
+                                foregroundColor: Colors.white,
+                                elevation: 0,
                                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                               ),
                               child: const Text('Batal', style: TextStyle(fontWeight: FontWeight.w600)),
                             ),
                             const SizedBox(width: 10),
-                            Container(
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [Color(0xFF1A2F5A), Color(0xFF2D4A8A)],
-                                ),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: ElevatedButton.icon(
+                            ElevatedButton.icon(
                                 onPressed: () async {
                                   if (formKey.currentState!.validate()) {
                                     final newRoom = Room(
@@ -2652,7 +2629,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       borderRadius: BorderRadius.circular(10)),
                                 ),
                               ),
-                            ),
                           ],
                         ),
                       ],
@@ -2785,14 +2761,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               child: const Text('Batal', style: TextStyle(fontWeight: FontWeight.bold)),
                             ),
                             const SizedBox(width: 10),
-                            Container(
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [Color(0xFF1A2F5A), Color(0xFF2D4A8A)],
-                                ),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: ElevatedButton.icon(
+                            ElevatedButton.icon(
                                 onPressed: !hasChanges() ? null : () async {
                                   if (formKey.currentState!.validate()) {
                                     final editedBarcode = 'RM-${nameController.text.toUpperCase().replaceAll(' ', '-')}-${yearController.text}';
@@ -2837,7 +2806,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       borderRadius: BorderRadius.circular(10)),
                                 ),
                               ),
-                            ),
                           ],
                         ),
                       ],
