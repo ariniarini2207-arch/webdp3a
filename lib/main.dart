@@ -2694,8 +2694,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
               Widget formContent = Form(
                 key: formKey,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Header gradient navy (konsisten dengan login)
                     Container(
@@ -2752,12 +2751,13 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                       ),
                     ),
 
-                        // Form fields
-                        Padding(
+                    // Area form yg bisa di-scroll, header di atas tetap
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Padding(
                           padding: const EdgeInsets.all(20),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
                             children: [
                               _sectionLabel(
                                   'Informasi Barang',
@@ -3036,17 +3036,18 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                   const Color(0xFF1A2F5A)),
                               const SizedBox(height: 10),
                               Row(
-                                crossAxisAlignment: CrossAxisAlignment.end,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Expanded(
                                     child: TextFormField(
                                       controller: fotoController,
+                                      onChanged: (_) => dialogSetState(() {}),
                                       decoration: themedInput(
                                           'URL Foto / Path File Gambar',
                                           Icons.link_outlined),
                                     ),
                                   ),
-                                  const SizedBox(width: 10),
+                                  const SizedBox(width: 8),
                                   ElevatedButton.icon(
                                     onPressed: isUploadingFoto ? null : () async {
                                       final ImagePicker picker = ImagePicker();
@@ -3115,6 +3116,27 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                                           horizontal: 14, vertical: 15),
                                     ),
                                   ),
+                                  // Tombol hapus foto — muncul hanya jika ada URL
+                                  if (fotoController.text.isNotEmpty) ...[
+                                    const SizedBox(width: 8),
+                                    ElevatedButton.icon(
+                                      onPressed: () {
+                                        dialogSetState(() {
+                                          fotoController.clear();
+                                        });
+                                      },
+                                      icon: const Icon(Icons.delete_outline, size: 18),
+                                      label: const Text('Hapus Foto'),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.red.shade700,
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(10)),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 14, vertical: 15),
+                                      ),
+                                    ),
+                                  ],
                                 ],
                               ),
                           if (!isWide) ...[
@@ -3275,6 +3297,8 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                         ],
                       ),
                     ),
+                  ),
+                ),
                   ],
                 ),
               );
@@ -3288,7 +3312,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                     children: [
                       SizedBox(
                         width: 480,
-                        child: SingleChildScrollView(child: formContent),
+                        child: formContent,
                       ),
                       Expanded(
                         child: Container(
@@ -3341,7 +3365,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
               return SizedBox(
                 width: double.infinity,
                 height: MediaQuery.of(context).size.height * 0.9,
-                child: SingleChildScrollView(child: formContent),
+                child: formContent,
               );
             },
           );
